@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUDST Jersey — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E3E5EB; --paper-2:#EEF0F4; --card:#F8F9FB; --ink:#1B1D21; --ink-2:#4A4E57; --steel:#6B7078;
+  --line:#C8CBD3; --line-2:#D7DAE1;
+  --a:#006C6C; --a2:#FFFFC9; --on-a:#FFFFFF; --a-soft:#D3E6E3;
+  --ok:#1F7A4D; --warn:#A86A00; --bad:#B3261E; --info:#2F5E9E; --prod:#6B3FA0;
+  --field:#FFFFFF; --side:#1B1D21; --on-ink:#FFFFFF; --shadow:rgba(20,24,30,.22);
+  --ease:cubic-bezier(0.22,1,0.36,1); --t-fast:150ms; --t-mid:200ms; --t-slow:320ms;
+  --r-sm:6px; --r:10px; --r-lg:18px;
+  --disp:"Chakra Petch",system-ui,sans-serif; --body:"Anuphan",system-ui,sans-serif;
+}
+
+html[data-theme=dark]{
+  --paper:#141415; --paper-2:#19191B; --card:#1D1D20; --field:#232325; --ink:#EDEDED; --ink-2:#A1A1A6; --steel:#85858B;
+  --line:#36363C; --line-2:#2A2A2E; --side:#0F0F10; --on-ink:#141415; --shadow:rgba(0,0,0,.45);
+  --ok:#4CC38A; --warn:#E0A23A; --bad:#E5484D; --info:#7FA6E0; --prod:#B48BE0;
+  color-scheme:dark;
+}
+html[data-theme=dark] body.admin{--a:#5DBDB5;--on-a:#0B1716}
+h1,h2,h3{font-weight:600}
+.num,.price b,.kpi b,.meter .top b,.seglist .v,.sumrow span:last-child,.line-item strong,table.t td.num,.bars-h .v,.ticket .tp b{font-variant-numeric:tabular-nums}
+.ic{display:block;flex:none}
+.iconbtn{border:0;background:none;width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2);transition:background-color var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
+.iconbtn:hover{background:var(--paper-2);color:var(--ink)}
+.themebtn{display:flex;align-items:center;gap:8px;margin-top:24px;border:1px solid #33363C;background:none;color:#C3C7CE;border-radius:8px;padding:8px 12px;font-size:14px;width:100%}
+.themebtn:hover{background:#2A2D33;color:#fff}
+.hh-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.hh-text .meter{margin-top:0}
+.seglist{list-style:none;margin:0;padding:0}
+.seglist li{display:grid;grid-template-columns:1fr auto 48px;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:15px}
+.seglist li:last-child{border-bottom:0}
+.seglist .v{font-weight:600}
+.seglist .p{text-align:right;color:var(--steel)}
+.drop .ph.ok{background:var(--a);color:var(--on-a)}
+.x{display:grid;place-items:center;color:var(--ink-2)}
+.qty button,.mini-qty button{display:grid;place-items:center}
+.mini-qty button{color:var(--ink)}
+.dadmin.add b,.dcard.slot b{display:flex;justify-content:center}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--body);color:var(--ink);background:var(--paper);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background-color var(--t-slow) var(--ease),color var(--t-slow) var(--ease)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--a);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* demo bar */
+.demobar{background:var(--side);color:#E8E8E8;font-size:13px}
+.demobar .wrap{display:flex;align-items:center;gap:12px;min-height:40px;flex-wrap:wrap}
+.demobar .seg{display:inline-flex;background:#2E3136;border-radius:999px;padding:4px}
+.demobar .seg button{border:0;background:none;color:#C9CCD3;padding:4px 12px;border-radius:999px;font-size:13px}
+.demobar .seg button[aria-pressed=true]{background:#E8E8E8;color:#1B1D21;font-weight:600}
+.demobar .dnote{color:#9EA3AC;margin-left:auto}
+
+/* header */
+header.site{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-2)}
+header.site .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.brand{display:flex;align-items:baseline;gap:8px;text-decoration:none;border:0;background:none;padding:0}
+.brand b{font-family:var(--disp);font-style:italic;font-weight:700;font-size:26px;letter-spacing:-.5px;color:var(--a);line-height:1}
+.brand span{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink-2)}
+nav.main{display:flex;gap:4px;margin-left:auto;align-items:center}
+nav.main button{border:0;background:none;padding:8px 12px;border-radius:var(--r-sm);color:var(--ink-2);font-weight:500}
+nav.main button:hover{background:var(--paper-2);color:var(--ink)}
+nav.main button[aria-current=page]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--a)}
+.cartbtn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink)!important;border-radius:8px!important;padding:8px 16px!important;color:var(--ink)!important}
+.cartbtn .n{background:var(--a);color:var(--on-a);border-radius:999px;min-width:24px;height:24px;display:inline-grid;place-items:center;font-size:12px;font-weight:600;padding:0 8px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r);padding:12px 20px;font-weight:600;background:var(--a);color:var(--on-a);transition:transform var(--t-fast) var(--ease),filter var(--t-fast) var(--ease)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.ink{background:var(--ink);color:var(--on-ink)}
+.btn.small{padding:8px 12px;font-size:14px;border-radius:var(--r-sm)}
+.btn.block{width:100%}
+.btn.danger{background:transparent;color:var(--bad);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--bad) 45%,transparent)}
+.link{border:0;background:none;padding:0;color:var(--a);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* hero / product */
+.hero>*,.two>*,.co>*,.agrid>*,.adm>*{min-width:0}
+.hero{display:grid;grid-template-columns:1.08fr 1fr;gap:40px;padding:36px 0 28px;align-items:start}
+.stage{position:relative;aspect-ratio:1/1.02;display:grid;place-items:center;isolation:isolate;container-type:inline-size;overflow:hidden}
+.stage .num{position:absolute;inset:0;display:grid;place-items:center;z-index:-1;font-family:var(--disp);font-weight:600;font-style:italic;font-size:78cqw;line-height:.8;letter-spacing:-.06em;padding-right:4cqw;color:transparent;-webkit-text-stroke:2px color-mix(in srgb,var(--a) 55%,transparent);user-select:none;}
+.stage img.shirt{max-height:94%;width:auto;filter:drop-shadow(0 24px 32px var(--shadow));transition:opacity var(--t-mid) var(--ease)}
+.stage .flip{position:absolute;left:0;bottom:4px;display:flex;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:var(--ink-2)}
+.chip[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
+.thumbs{display:flex;gap:12px;margin-top:16px;overflow-x:auto;padding-bottom:4px}
+.thumbs button{flex:0 0 76px;height:76px;border-radius:var(--r);border:2px solid transparent;padding:0;overflow:hidden;background:var(--card)}
+.thumbs button img{width:100%;height:100%;object-fit:cover}
+.thumbs button.cut img{object-fit:contain;padding:8px}
+.thumbs button[aria-pressed=true]{border-color:var(--a)}
+
+.buy h1{font-family:var(--disp);font-weight:600;font-size:clamp(34px,4.4vw,52px);line-height:1.02;margin:8px 0 8px;letter-spacing:-.5px}
+.round{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--a);background:color-mix(in srgb,var(--a) 12%,transparent);padding:4px 12px;border-radius:6px}
+.round.closed{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.round i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.sub{color:var(--ink-2);margin:0 0 20px;max-width:46ch}
+.price{display:flex;align-items:baseline;gap:12px;margin-bottom:24px}
+.price b{font-family:var(--disp);font-size:40px;font-weight:600;line-height:1}
+.price span{color:var(--ink-2);font-size:15px}
+.field-label{display:flex;justify-content:space-between;align-items:baseline;font-weight:600;margin:0 0 8px;font-size:15px}
+.field-label small{font-weight:500;color:var(--ink-2)}
+.designs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.dcard{border:2px solid var(--line-2);background:var(--card);border-radius:var(--r);padding:8px 8px 12px;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:132px}
+.dcard .pic{height:80px;display:grid;place-items:center}
+.dcard .pic img,.dcard .pic svg{max-height:78px;width:auto}
+.dcard .nm{font-weight:600;font-size:14px;line-height:1.25}
+.dcard .sw{display:flex;gap:4px}
+.dcard .sw i{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.dcard[aria-pressed=true]{border-color:var(--a);box-shadow:0 0 0 3px color-mix(in srgb,var(--a) 18%,transparent)}
+.dcard.slot{border-style:dashed;border-color:var(--line);background:transparent;color:var(--steel);align-items:center;justify-content:center;text-align:center;cursor:default}
+.dcard.slot b{font-family:var(--disp);font-size:28px;line-height:1;color:var(--line)}
+.dcard.soon{opacity:.75}
+.dcard .tag{font-size:12px;color:var(--warn);font-weight:600}
+.sizes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px}
+.sizes button{height:48px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--card);font-family:var(--disp);font-weight:600;font-size:16px}
+.sizes button:hover{border-color:var(--ink)}
+.sizes button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.qtyrow{display:flex;gap:12px;margin:20px 0 12px}
+.qty{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:var(--r);background:var(--card)}
+.qty button{width:44px;height:48px;border:0;background:none;font-size:20px}
+.qty output{min-width:28px;text-align:center;font-weight:600}
+.qtyrow .btn{flex:1}
+.err,.panel .err{color:var(--bad);font-size:14px;font-weight:500;min-height:1.2em;margin:4px 0 0}
+
+.meter{margin-top:24px;padding:16px 20px;background:var(--card);border-radius:var(--r);border:1px solid var(--line-2)}
+.meter .top{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin-bottom:12px}
+.meter .top b{font-family:var(--disp);font-size:22px}
+.bar{position:relative;height:12px;border-radius:999px;background:var(--line-2)}
+.bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--a);}
+.bar .mk{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.bar .mk span{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:12px;white-space:nowrap;color:var(--ink-2)}
+.bar .mk.end span{left:auto;right:0;transform:none}
+.meter .foot{margin-top:28px;font-size:14px;color:var(--ink-2)}
+
+/* sections */
+section.blk{padding:44px 0;border-top:1px solid var(--line)}
+section.blk h2{font-family:var(--disp);font-weight:600;font-size:30px;line-height:1.1;margin:0 0 8px;letter-spacing:-.3px}
+section.blk .lead{color:var(--ink-2);margin:0 0 28px;max-width:62ch}
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
+.steps li{position:relative;padding:20px 16px 0 0;border-top:3px solid var(--line)}
+.steps li.done{border-top-color:var(--a)}
+.steps li.now{border-top-color:var(--a)}
+.steps li.now::after{content:"";position:absolute;top:-8px;left:0;width:13px;height:12px;border-radius:50%;background:var(--a);box-shadow:0 0 0 5px color-mix(in srgb,var(--a) 22%,transparent)}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--disp);font-weight:600;font-size:15px;color:var(--steel);display:block}
+.steps b{display:block;font-size:16px;margin:2px 0 2px}
+.steps span{font-size:14px;color:var(--ink-2)}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:36px;align-items:start}
+table.t{width:100%;border-collapse:collapse;font-size:15px;background:var(--card);border-radius:var(--r);overflow:hidden}
+table.t th,table.t td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line-2)}
+table.t th{font-weight:600;background:var(--paper-2);font-size:14px;color:var(--ink-2)}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.hl td{background:color-mix(in srgb,var(--a) 12%,transparent);font-weight:600}
+.panel{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-lg);padding:20px}
+.panel h3{margin:0 0 8px;font-size:18px}
+.panel p{margin:0 0 12px;color:var(--ink-2);font-size:15px}
+.helper{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.input{border:1.5px solid var(--line);background:var(--field);border-radius:var(--r-sm);padding:12px 12px;width:100%;min-width:0}
+.input:focus{outline:none;border-color:var(--a);box-shadow:0 0 0 3px color-mix(in srgb,var(--a) 18%,transparent)}
+.input.bad{border-color:var(--bad)}
+.helper .input{width:110px}
+.result{margin-top:12px;font-size:15px;min-height:1.6em}
+.result b{font-family:var(--disp);font-size:22px;color:var(--a)}
+.measure{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center;margin-top:16px;font-size:14px;color:var(--ink-2)}
+.specs{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.specs div{border-left:3px solid var(--a);padding:2px 0 2px 16px}
+.specs b{display:block}
+.specs span{font-size:14px;color:var(--ink-2)}
+details.qa{border-bottom:1px solid var(--line);padding:4px 0}
+details.qa summary{cursor:pointer;font-weight:600;padding:12px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.qa summary::after{content:"+";font-family:var(--disp);font-size:22px;line-height:1;color:var(--a)}
+details.qa[open] summary::after{content:"–"}
+details.qa p{margin:0 0 16px;color:var(--ink-2);max-width:70ch}
+footer{padding:32px 0 52px;color:var(--steel);font-size:14px;border-top:1px solid var(--line)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(15,17,20,.42);z-index:50;opacity:0;pointer-events:none;transition:opacity var(--t-mid) var(--ease)}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--paper-2);z-index:51;transform:translateX(102%);transition:transform var(--t-slow) var(--ease);display:flex;flex-direction:column;box-shadow:-20px 0 40px rgba(0,0,0,.12)}
+.drawer.on{transform:none}
+.drawer .hd{display:flex;align-items:center;justify-content:space-between;padding:20px 20px;border-bottom:1px solid var(--line)}
+.drawer .hd h2{margin:0;font-family:var(--disp);font-size:22px}
+.x{border:0;background:none;font-size:26px;line-height:1;width:40px;height:40px;border-radius:50%}
+.x:hover{background:var(--line-2)}
+.drawer .bd{flex:1;overflow:auto;padding:16px 20px}
+.drawer .ft{padding:16px 20px;border-top:1px solid var(--line);background:var(--card)}
+.line-item{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.line-item .pic{width:64px;height:64px;background:var(--card);border-radius:var(--r-sm);display:grid;place-items:center;padding:4px}
+.line-item .pic img,.line-item .pic svg{max-height:56px;width:auto}
+.line-item b{display:block;font-size:15px}
+.line-item small{color:var(--ink-2)}
+.mini-qty{display:inline-flex;align-items:center;gap:2px;margin-top:4px}
+.mini-qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--field)}
+.mini-qty span{min-width:24px;text-align:center;font-weight:600}
+.sumrow{display:flex;justify-content:space-between;font-size:15px;margin:4px 0}
+.sumrow.total{font-size:18px;font-weight:600;margin-top:12px}
+.empty{text-align:center;padding:52px 12px;color:var(--ink-2)}
+.empty b{display:block;font-family:var(--disp);font-size:20px;color:var(--ink);margin-bottom:8px}
+
+/* checkout */
+.page{padding:32px 0 60px}
+.page h1{font-family:var(--disp);font-size:36px;margin:0 0 4px;line-height:1.1}
+.page .lead{color:var(--ink-2);margin:0 0 24px}
+.co{display:grid;grid-template-columns:1.4fr 1fr;gap:28px;align-items:start}
+.co .panel{margin-bottom:20px}
+.co .panel h2{font-size:19px;margin:0 0 16px;display:flex;align-items:center;gap:12px}
+.co .panel h2 i{font-style:normal;font-family:var(--disp);width:28px;height:28px;border-radius:50%;background:var(--a);color:var(--on-a);display:grid;place-items:center;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.f label{font-size:14px;font-weight:600}
+.f label small{font-weight:400;color:var(--steel)}
+.f .msg{font-size:13px;color:var(--bad);min-height:0}
+.radios{display:grid;gap:12px}
+.radio{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);background:var(--field);border-radius:var(--r);padding:12px 16px;cursor:pointer}
+.radio:has(input:checked){border-color:var(--a);box-shadow:0 0 0 3px color-mix(in srgb,var(--a) 15%,transparent)}
+.radio input{margin-top:4px;accent-color:var(--a)}
+.radio b{display:block}
+.radio span{font-size:14px;color:var(--ink-2)}
+.pay{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center;margin-top:16px;padding:16px;background:var(--paper-2);border-radius:var(--r)}
+.pay .qr{background:#fff;padding:12px;border-radius:8px}
+.pay p{margin:0;font-size:14px;color:var(--ink-2)}
+.pay p b{color:var(--ink);font-size:16px}
+.drop{display:flex;gap:16px;align-items:center;border:2px dashed var(--line);border-radius:var(--r);padding:16px;background:var(--field);margin-top:16px}
+.drop img{width:64px;height:84px;object-fit:cover;border-radius:6px}
+.drop .ph{width:64px;height:84px;border-radius:6px;background:var(--paper-2);display:grid;place-items:center;color:var(--steel);font-size:26px}
+.check{display:flex;gap:12px;align-items:flex-start;font-size:14px;margin:12px 0;color:var(--ink-2)}
+.check input{margin-top:4px;accent-color:var(--a);width:17px;height:16px}
+.summary{position:sticky;top:84px}
+.note{font-size:14px;color:var(--ink-2);background:color-mix(in srgb,var(--a) 9%,var(--card));border-left:3px solid var(--a);padding:12px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:12px 0}
+
+/* done + track */
+.donepage{max-width:720px;margin:0 auto;text-align:left}
+.ticket{background:var(--card);border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line-2);margin:20px 0}
+.ticket .tp{background:var(--a);color:var(--on-a);padding:24px 24px;position:relative;overflow:hidden}
+.ticket .tp small{opacity:.85}
+.ticket .tp b{display:block;font-family:var(--disp);font-size:38px;line-height:1.1;letter-spacing:1px}
+.ticket .bt{padding:20px 24px}
+.timeline{list-style:none;margin:8px 0 0;padding:0}
+.timeline li{position:relative;padding:0 0 24px 36px}
+.timeline li::before{content:"";position:absolute;left:8px;top:24px;bottom:0;width:2px;background:var(--line)}
+.timeline li:last-child::before{display:none}
+.timeline li .dot{position:absolute;left:0;top:4px;width:18px;height:20px;border-radius:50%;border:2px solid var(--line);background:var(--card)}
+.timeline li.done .dot{background:var(--a);border-color:var(--a)}
+.timeline li.done::before{background:var(--a)}
+.timeline li.now .dot{border-color:var(--a);box-shadow:0 0 0 4px color-mix(in srgb,var(--a) 20%,transparent)}
+.timeline li.bad .dot{background:var(--bad);border-color:var(--bad)}
+.timeline b{display:block}
+.timeline span{font-size:14px;color:var(--ink-2)}
+.lookup{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;max-width:720px}
+.hint{font-size:14px;color:var(--steel);margin-top:12px}
+
+/* admin */
+body.admin{--a:#006C6C;--a2:#FFFFC9;--on-a:#fff}
+.adm{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - 104px)}
+.side{background:var(--side);color:#D9DCE1;padding:24px 16px}
+.side .brand b{color:#fff}
+.side .brand span{color:#9EA3AC}
+.side nav{display:flex;flex-direction:column;gap:2px;margin-top:28px}
+.side nav button{border:0;background:none;text-align:left;color:#C3C7CE;padding:12px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+.side nav button:hover{background:#2A2D33;color:#fff}
+.side nav button[aria-current=page]{background:#E8E8E8;color:#1B1D21;font-weight:600}
+.side nav .cnt{background:var(--warn);color:#1B1D21;font-size:12px;border-radius:999px;padding:0 8px;font-weight:600}
+.side .who{margin-top:32px;padding-top:16px;border-top:1px solid #33363C;font-size:13px;color:#9EA3AC}
+.amain{padding:28px 32px 60px;min-width:0}
+.amain h1{font-family:var(--disp);font-size:30px;margin:0 0 2px}
+.amain .lead{color:var(--ink-2);margin:0 0 24px}
+.kpis{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r);padding:16px 20px}
+.kpi small{color:var(--ink-2);font-size:14px}
+.kpi b{display:block;font-family:var(--disp);font-size:32px;line-height:1.15}
+.kpi .bar{margin:12px 0 32px}
+.kpi.warn b{color:var(--warn)}
+.agrid{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar .input{max-width:260px;margin-left:auto}
+.fchip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:14px}
+.fchip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.fchip em{font-style:normal;opacity:.7;margin-left:4px}
+.tablewrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line-2)}
+table.orders{min-width:760px}
+table.orders tbody tr{cursor:pointer}
+table.orders tbody tr:hover td{background:var(--paper-2)}
+.st{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:2px 12px;border-radius:999px;white-space:nowrap}
+.st::before{content:"";width:7px;height:8px;border-radius:50%;background:currentColor}
+.st.review{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.st.confirmed{color:var(--info);background:color-mix(in srgb,var(--info) 14%,transparent)}
+.st.production{color:var(--prod);background:color-mix(in srgb,var(--prod) 14%,transparent)}
+.st.shipped{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.st.rejected,.st.cancelled{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.opanel .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line-2);font-size:15px}
+.opanel .row span:first-child{color:var(--ink-2)}
+.slip{margin:16px 0;border-radius:var(--r);overflow:hidden;background:var(--paper-2);display:grid;place-items:center;min-height:160px;color:var(--steel);font-size:14px;text-align:center;padding:12px}
+.slip img{max-height:260px;width:auto}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.bars-h div{display:grid;grid-template-columns:130px 1fr 40px;gap:12px;align-items:center;font-size:14px;margin:8px 0}
+.bars-h i{display:block;height:12px;border-radius:999px;background:var(--a)}
+.bars-h span.v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.dadmin{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r);padding:16px}
+.dadmin .pic{height:152px;display:grid;place-items:center;background:var(--paper-2);border-radius:var(--r-sm);margin-bottom:12px}
+.dadmin .pic img,.dadmin .pic svg{max-height:136px;width:auto}
+.dadmin b{display:block}
+.dadmin select{margin-top:8px}
+.dadmin.add{border:2px dashed var(--line);background:transparent;display:grid;place-items:center;text-align:center;color:var(--ink-2);min-height:252px}
+.dadmin.add b{font-family:var(--disp);font-size:40px;color:var(--a);line-height:1}
+.colors{display:flex;gap:12px}
+.colors label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.colors input[type=color]{width:64px;height:40px;border:1.5px solid var(--line);border-radius:8px;padding:2px;background:var(--field)}
+.login{max-width:420px;margin:60px auto;text-align:left}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);background:var(--ink);color:var(--on-ink);padding:12px 20px;border-radius:var(--r);z-index:80;opacity:0;transition:opacity var(--t-mid) var(--ease),transform var(--t-mid) var(--ease);font-size:15px;max-width:90vw}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:20px;background:rgba(15,17,20,.45)}
+.modal.on{display:grid}
+.modal .box{background:var(--paper-2);border-radius:var(--r-lg);width:min(560px,100%);max-height:90vh;overflow:auto;padding:24px}
+.modal .box h2{margin:0 0 16px;font-family:var(--disp)}
+pre.copy{white-space:pre-wrap;background:var(--field);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:12px;font-size:14px;font-family:var(--body);max-height:260px;overflow:auto}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:12px;padding-top:16px}
+  .stage{aspect-ratio:1/0.95}
+  .steps{grid-template-columns:1fr;gap:0}
+  .steps li{border-top:0;border-left:3px solid var(--line);padding:0 0 20px 20px}
+  .steps li::before{display:inline;margin-right:8px}
+  .steps b{display:inline}
+  .steps span{display:block}
+  .steps li.done,.steps li.now{border-left-color:var(--a)}
+  .steps li.now::after{top:4px;left:-8px}
+  .two,.co,.agrid{grid-template-columns:1fr}
+  .specs{grid-template-columns:1fr 1fr}
+  .summary{position:static}
+  .adm{grid-template-columns:1fr}
+  .side{padding:12px}
+  .side .brand,.side .who{display:none}
+  .side nav{flex-direction:row;overflow-x:auto;margin:0}
+  .side nav button{white-space:nowrap}
+  .amain{padding:20px 16px 52px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpis .kpi:first-child{grid-column:1/-1}
+  nav.main .hide-sm{display:none}
+  .demobar .dnote{display:none}
+}
+@media (max-width:560px){
+  nav.main{gap:0}
+  nav.main button{padding:8px;white-space:nowrap}
+  .cartbtn{padding:4px 12px!important}
+  header.site .wrap{gap:8px}
+  .brand b{font-size:22px}
+  .wrap{padding:0 16px}
+  .brand span{display:none}
+  .designs{grid-template-columns:repeat(3,1fr);gap:8px}
+  .dcard{min-height:120px;padding:8px}
+  .dcard .pic{height:64px}
+  .dcard .pic img{max-height:64px}
+  .sizes{grid-template-columns:repeat(3,1fr)}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .lookup{grid-template-columns:1fr}
+  .pay{grid-template-columns:1fr}
+  .pay .qr{max-width:170px}
+  .specs{grid-template-columns:1fr}
+}
+
+/* catalog home */
+.crumbs{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink-2);padding-top:20px}
+.crumbs .link{font-weight:500}
+.hhero{display:grid;grid-template-columns:1fr 1.05fr;gap:32px;align-items:center;padding:36px 0 40px}
+.hhero>*{min-width:0}
+.wordmark{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(64px,10vw,132px);line-height:.86;letter-spacing:-.04em;color:var(--a);margin:16px 0 20px}
+.hh-text .sub{font-size:17px}
+.hh-text .meter{max-width:520px}
+.hh-art{position:relative;aspect-ratio:1/.9;container-type:inline-size;isolation:isolate}
+.hh-art .num{position:absolute;inset:0;display:grid;place-items:center;z-index:-1;font-family:var(--disp);font-weight:700;font-style:italic;font-size:70cqw;line-height:.8;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:2px color-mix(in srgb,var(--a) 45%,transparent)}
+.hh-art img{position:absolute;filter:drop-shadow(0 24px 28px var(--shadow))}
+.hh-art img.back{width:52%;right:2%;top:4%;transform:rotate(7deg)}
+.hh-art img.front{width:58%;left:8%;top:10%;transform:rotate(-4deg)}
+.cat-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.pcard{border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;gap:12px;color:inherit}
+.pimg{position:relative;aspect-ratio:4/5;border-radius:var(--r-lg);background:var(--card);display:grid;place-items:center;overflow:hidden;border:1px solid var(--line-2);transition:border-color var(--t-fast) var(--ease)}
+.pimg img{grid-area:1/1;max-width:82%;max-height:86%;object-fit:contain;transition:opacity var(--t-mid) var(--ease)}
+.pimg img.b{opacity:0}
+.pcard:hover .pimg img.b,.pcard:focus-visible .pimg img.b{opacity:1}
+.pcard:hover .pimg img.f,.pcard:focus-visible .pimg img.f{opacity:0}
+.pcard:hover .pimg{border-color:var(--ink)}
+.pcard.empty .pimg{background:var(--paper-2);border:2px dashed var(--line)}
+.noimg-t,.noimg span{font-size:14px;color:var(--steel);background:var(--card);padding:4px 12px;border-radius:999px;border:1px solid var(--line-2)}
+.noimg{width:100%;height:100%;min-height:56px;display:grid;place-items:center;border:2px dashed var(--line);border-radius:var(--r);background:var(--paper-2)}
+.stage .noimg{width:72%;height:84%;border-radius:var(--r-lg)}
+.line-item .pic .noimg span,.dcard .noimg span,.dadmin .noimg span{font-size:11px;padding:2px 8px}
+.dadmin .pic .noimg{width:70%;height:120px}
+.ptag{position:absolute;left:12px;top:12px;font-size:13px;font-weight:600;padding:4px 12px;border-radius:6px;background:var(--card);color:var(--ink-2);border:1px solid var(--line-2)}
+.ptag.open{background:var(--a);color:var(--on-a);border-color:transparent}
+.pinfo b{display:block;font-size:16px;line-height:1.3}
+.pinfo span{font-size:14px;color:var(--ink-2)}
+.pinfo .sw{display:flex;gap:4px;margin-top:8px}
+.pinfo .sw i{width:14px;height:16px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.pcard.empty .pinfo .sw i{background:var(--line-2);box-shadow:none}
+.pcard.empty .pinfo b{color:var(--ink-2)}
+@media (max-width:900px){.hhero{grid-template-columns:1fr;padding-top:20px}.hh-art{order:-1;max-width:520px;width:100%;margin:0 auto}.pgrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.pgrid{grid-template-columns:repeat(2,1fr);gap:12px}.pimg{border-radius:var(--r)}.pinfo b{font-size:15px}}
+
+.custom{margin:20px 0 0;padding:16px 16px;border:1.5px solid var(--line-2);border-radius:var(--r);background:var(--card)}
+.cgrid{display:grid;grid-template-columns:1fr 110px;gap:12px}
+#cName{text-transform:uppercase;font-family:var(--disp);font-weight:600;letter-spacing:.5px}
+#cNum{font-family:var(--disp);font-weight:600;font-size:18px}
+.backwrap{position:relative;height:94%;container-type:inline-size;filter:drop-shadow(0 24px 32px var(--shadow))}
+.backwrap img{width:100%;height:auto;display:block}
+.backwrap span{position:absolute;left:51.5%;transform:translate(-50%,-50%) skewX(-8deg);font-family:var(--disp);font-weight:700;line-height:1;white-space:nowrap;text-align:center}
+.backwrap .bn{top:42.9cqw;letter-spacing:.02em}
+.backwrap .bnum{top:67.3cqw;font-size:37.8cqw;letter-spacing:-.04em}
+.backwrap.green span{color:#0A5C5C}
+.cprev{display:none}
+@media (max-width:900px){.cprev{display:flex;justify-content:center;margin-top:12px;height:220px}.backwrap.mini{height:100%}}
+.backwrap.black span{color:#F4F4F4}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="demobar"><div class="wrap">
+  <span>โหมดสาธิต</span>
+  <div class="seg" role="group" aria-label="สลับมุมมอง">
+    <button data-act="mode" data-v="shop" aria-pressed="true">หน้าร้าน (ลูกค้า)</button>
+    <button data-act="mode" data-v="admin" aria-pressed="false">หลังบ้าน (ผู้ดูแล)</button>
+  </div>
+  <span class="dnote">ข้อมูลทั้งหมดเป็นข้อมูลจำลอง คำสั่งซื้อจากหน้าร้านจะขึ้นในหลังบ้านทันที</span>
+</div></div>
+<div id="app"></div>
+<div class="scrim" id="scrim" data-act="closeDrawer"></div>
+<aside class="drawer" id="drawer" aria-label="ตะกร้าสินค้า" aria-hidden="true"></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const IMG = %%IMAGES%%;
+const IMGDIM = %%DIMS%%;
+
+/* ---------- data ---------- */
+const SIZES = [
+  {s:'S',  chest:36, len:26},
+  {s:'M',  chest:38, len:27},
+  {s:'L',  chest:40, len:28},
+  {s:'XL', chest:42, len:29},
+  {s:'2XL',chest:44, len:30},
+  {s:'3XL',chest:46, len:31},
+];
+const STATUS = {
+  review:    {t:'รอตรวจสอบการชำระเงิน', d:'ทีมงานกำลังตรวจสลิปของคุณ ปกติใช้เวลาไม่เกิน 1 วัน'},
+  confirmed: {t:'ยืนยันคำสั่งซื้อแล้ว',  d:'ได้รับเงินเรียบร้อย คำสั่งซื้อจะถูกรวมยอดส่งผลิตเมื่อปิดรอบ'},
+  production:{t:'กำลังผลิต',            d:'ส่งยอดให้โรงงานแล้ว ใช้เวลาผลิตประมาณ 3 สัปดาห์'},
+  shipped:   {t:'จัดส่งแล้ว',            d:'พัสดุออกจากทีมงานแล้ว ตรวจสอบเลขพัสดุด้านล่าง'},
+  rejected:  {t:'ชำระเงินไม่ถูกต้อง',     d:'ยอดหรือสลิปไม่ตรง ทีมงานจะติดต่อกลับทางเบอร์โทรที่ให้ไว้'},
+  cancelled: {t:'ยกเลิกแล้ว',            d:'คำสั่งซื้อนี้ถูกยกเลิก หากชำระเงินแล้วจะได้รับเงินคืนภายใน 7 วัน'},
+};
+const FLOW = ['review','confirmed','production','shipped'];
+const CUST = {student:'นักศึกษา', alumni:'ศิษย์เก่า', staff:'อาจารย์/บุคลากร', guest:'ผู้เข้าร่วมกิจกรรม/ทั่วไป'};
+
+const S = {
+  mode:'shop', view:'shop', dark:(()=>{ try{ const v=localStorage.getItem('mudst-theme'); if(v) return v==='dark'; }catch(_){} return !!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); })(),
+  settings:{round:'รอบที่ 1', price:590, customFee:0, open:'2026-11-01', close:'2026-11-30', ship:'2026-12-26', isOpen:true, minQty:49, target:100},
+  designs:[
+    {id:'green', th:'ขาว-เขียว', en:'White Green', colors:['#FFFFFF','#006C6C','#FFFFC9'], a:'#006C6C', a2:'#FFFFC9', on:'#FFFFFF', aD:'#5DBDB5', onD:'#0B1716', imgs:'green', status:'open'},
+    {id:'black', th:'ดำ-เทา',   en:'Black Grey',  colors:['#0D0D0F','#6B7078','#E8E8E8'], a:'#1F2226', a2:'#C9CCD3', on:'#FFFFFF', aD:'#E4E4E7', onD:'#141415', imgs:'black', status:'open'},
+    ...Array.from({length:10},(_,i)=>({id:'p'+(i+3), th:'สินค้าตัวอย่าง '+String(i+3).padStart(2,'0'), en:'', colors:[], a:'#3E434B', a2:'#E3E5EB', on:'#FFFFFF', aD:'#C9CCD3', onD:'#141415', imgs:null, status:'soon', ph:true})),
+  ],
+  sel:{design:'green', size:null, qty:1, view:'front'},
+  cart:[], orders:[], trackResult:null, lastOrder:null,
+  admin:{logged:false, tab:'overview', filter:'all', q:'', open:null, includeReview:false},
+  co:{slip:null, slipDemo:false, pay:'promptpay'},
+};
+
+/* seeded mock orders */
+(function seed(){
+  let x = 7; const r = () => (x = (x*9301+49297)%233280)/233280;
+  const first = ['ณัฐวุฒิ','พิมพ์ชนก','ธนกฤต','กมลชนก','ปัณณวัฒน์','ศุภิสรา','ภูมิพัฒน์','ชนิดา','วรเมธ','อริสา','กิตติพัศ','ธัญชนก','ปวริศ','ณิชา','สิรวิชญ์','เบญญาภา','พีรพล','มนัสนันท์','จิรายุ','ญาดา','ภาคิน','รินรดา','ธีรภัทร','ปุณยนุช'];
+  const last = ['ศรีสุข','วงศ์ไทย','แก้วมณี','ทองดี','สายบุญ','พรหมมา','จันทร์เพ็ญ','บุญมาก','รัตนกุล','ใจดี','เพชรรัตน์','สมบูรณ์'];
+  const prov = ['นครปฐม','กรุงเทพมหานคร','นนทบุรี','ปทุมธานี','สมุทรปราการ','ราชบุรี','ชลบุรี','เชียงใหม่'];
+  const nicks = ['MIN','BOOK','PIM','TON','FAH','NUT','BEAM','PLOY','JAMES','MILD','NAN','ICE','PETE','GAME','MAPRANG'];
+  const sizeW = ['S','M','M','M','L','L','L','XL','XL','2XL','3XL'];
+  const custW = ['student','student','student','student','student','alumni','alumni','staff','guest'];
+  for (let i=0;i<46;i++){
+    const items=[]; const n = r()<.78?1:2;
+    for(let k=0;k<n;k++){ const d = r()<.58?'green':'black'; const sz = sizeW[Math.floor(r()*sizeW.length)];
+      const cu = r()<.5 ? {cname:nicks[Math.floor(r()*nicks.length)], cnum:String(1+Math.floor(r()*98)).padStart(2,'0')} : {};
+      const ex = !cu.cname && items.find(it=>it.design===d&&it.size===sz&&!it.cname); if(ex) ex.qty++; else items.push({design:d,size:sz,qty:1,...cu}); }
+    const day = 1+Math.floor(r()*12.5); const hh = 8+Math.floor(r()*14), mm = Math.floor(r()*60);
+    const p = r(); const status = i<3?'review': p<.70?'confirmed': p<.92?'review': p<.97?'rejected':'cancelled';
+    const nm = first[Math.floor(r()*first.length)]+' '+last[Math.floor(r()*last.length)];
+    S.orders.push({ id:'MJ-'+(1001+i), name:nm, phone:'08'+String(Math.floor(10000000+r()*89999999)),
+      email:'', cust:custW[Math.floor(r()*custW.length)], addr:'หอพัก/บ้านเลขที่ '+(10+Math.floor(r()*300))+' ถ.พุทธมณฑลสาย 4', prov:prov[Math.floor(r()*prov.length)], zip:'73170',
+      items, pay: r()<.75?'promptpay':'bank', slip:null, status, track:'', created:new Date(2026,10,day,hh,mm).toISOString(), note:'' });
+  }
+  // fixed demo order for tracking
+  Object.assign(S.orders[0], {name:'มิน ใจดี', phone:'0812345678', status:'confirmed', items:[{design:'green',size:'M',qty:1,cname:'MIN',cnum:'20'}], cust:'student', prov:'นครปฐม'});
+  S.orders.sort((a,b)=>b.created.localeCompare(a.created));
+})();
+
+/* ---------- helpers ---------- */
+const ICO = {
+  upload:'<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+};
+const ic = (n, s=18) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[n]}</svg>`;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const baht = n => n.toLocaleString('th-TH')+' บาท';
+const tdate = (iso,opt) => new Date(iso.length<=10?iso+'T12:00:00':iso).toLocaleDateString('th-TH', opt||{day:'numeric',month:'short',year:'numeric'});
+const ttime = iso => new Date(iso).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const D = id => S.designs.find(d=>d.id===id);
+const qtyOf = o => o.items.reduce((a,b)=>a+b.qty,0);
+const priceOf = d => (D(d)&&D(d).price) || S.settings.price;
+const isCustom = it => !!(it.cname||it.cnum);
+const unitOf = it => priceOf(it.design) + (isCustom(it)?S.settings.customFee:0);
+const totalOf = o => o.items.reduce((a,b)=>a+b.qty*unitOf(b),0);
+const custLabel = it => isCustom(it) ? `${esc(it.cname||'MUDST')} #${esc(it.cnum||'07')}` : 'ลายมาตรฐาน';
+const itemText = it => `${esc(D(it.design)?.th||it.design)} ไซซ์ ${it.size}${isCustom(it)?` ชื่อ ${custLabel(it)}`:''} × ${it.qty}`;
+const live = o => !['rejected','cancelled'].includes(o.status);
+const shirtsOrdered = () => S.orders.filter(live).reduce((a,o)=>a+qtyOf(o),0);
+const today = new Date('2026-11-13T16:00:00+07:00');
+const daysLeft = () => Math.max(0, Math.ceil((new Date(S.settings.close+'T23:59:59+07:00') - today)/864e5));
+const roundOpen = () => S.settings.isOpen && daysLeft()>0;
+
+function jerseySVG(d, side){
+  const [c1,c2,c3] = d.colors; const id='j'+d.id+(side||'');
+  return `<svg viewBox="0 0 300 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ภาพจำลองเสื้อ ${esc(d.th)}">
+  <defs><clipPath id="${id}"><path d="M98 26 L58 38 L8 96 L42 142 L72 122 L72 312 Q150 328 228 312 L228 122 L258 142 L292 96 L242 38 L202 26 Q150 48 98 26Z"/></clipPath></defs>
+  <g clip-path="url(#${id})">
+    <rect width="300" height="330" fill="${c1}"/>
+    <path d="M58 38 L98 26 L120 70 L72 122 L42 142 L8 96Z" fill="${c2}"/>
+    <path d="M242 38 L202 26 L180 70 L228 122 L258 142 L292 96Z" fill="${c2}"/>
+    <path d="M72 330 L228 190 L228 240 L132 330Z" fill="${c2}"/>
+    <path d="M110 330 L228 222 L228 232 L122 330Z" fill="${c3}"/>
+    <path d="M8 96 L42 142 L48 134 L14 88Z" fill="${c3}"/><path d="M292 96 L258 142 L252 134 L286 88Z" fill="${c3}"/>
+  </g>
+  <path d="M112 24 L150 58 L188 24 L176 16 Q150 30 124 16Z" fill="${c2}" stroke="${c3}" stroke-width="3"/>
+  <text x="150" y="${side==='back'?150:170}" text-anchor="middle" font-family="Chakra Petch" font-style="italic" font-weight="700" font-size="${side==='back'?30:34}" fill="${c2===c1?c3:c2}">MUDST</text>
+  ${side==='back'?`<text x="150" y="235" text-anchor="middle" font-family="Chakra Petch" font-style="italic" font-weight="700" font-size="78" fill="${c2}">07</text>`:''}
+  </svg>`;
+}
+const picOf = (d, side='front') => d.imgs ? `<img src="${typeof d.imgs==='string'?IMG[d.imgs+'-'+side]:(d.imgs[side]||d.imgs.front)}" alt="เสื้อ MUDST Jersey ${esc(d.th)} ด้าน${side==='back'?'หลัง':'หน้า'}">` : `<div class="noimg" role="img" aria-label="ยังไม่มีรูปสินค้า"><span>รูปสินค้า</span></div>`;
+
+function theme(){
+  const b=document.body; document.documentElement.dataset.theme = S.dark?'dark':'light';
+  if (S.mode==='admin'){ b.classList.add('admin'); ['--a','--a2','--on-a'].forEach(v=>b.style.removeProperty(v)); return; }
+  b.classList.remove('admin');
+  const d = (S.view==='product' ? D(S.sel.design) : null) || S.designs.find(x=>x.status==='open'&&x.imgs) || S.designs[0];
+  const A = S.dark ? (d.aD || `color-mix(in srgb, ${d.a} 50%, #ffffff)`) : d.a; const ON = S.dark ? (d.onD || '#141415') : d.on;
+  b.style.setProperty('--a', A); b.style.setProperty('--a2', d.a2); b.style.setProperty('--on-a', ON);
+}
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('on'),2600); }
+function go(view){ S.view=view; render(); window.scrollTo({top:0}); try{history.replaceState(null,'','#'+view)}catch(e){} }
+
+/* ---------- shop views ---------- */
+function header(){
+  const n = S.cart.reduce((a,b)=>a+b.qty,0);
+  const cur = v => S.view===v?'aria-current="page"':'';
+  return `<header class="site"><div class="wrap">
+    <button class="brand" data-act="go" data-v="shop" aria-label="หน้าแรก MUDST Jersey"><b>MUDST</b><span>Jersey</span></button>
+    <nav class="main" aria-label="เมนูหลัก">
+      <button ${S.view==='shop'||S.view==='product'?'aria-current="page"':''} data-act="go" data-v="shop" class="hide-sm">สินค้าทั้งหมด</button>
+      <button data-act="jump" data-v="size" class="hide-sm">ตารางไซซ์</button>
+      <button ${cur('track')} data-act="go" data-v="track">ติดตามคำสั่งซื้อ</button>
+      <button class="iconbtn" data-act="theme" aria-label="${S.dark?'เปลี่ยนเป็นโหมดกลางวัน':'เปลี่ยนเป็นโหมดกลางคืน'}" title="${S.dark?'โหมดกลางวัน':'โหมดกลางคืน'}">${ic(S.dark?'sun':'moon')}</button>
+      <button class="cartbtn" data-act="openCart" aria-label="ตะกร้า ${n} ชิ้น">ตะกร้า <span class="n">${n}</span></button>
+    </nav></div></header>`;
+}
+
+function viewProduct(){
+  const d = D(S.sel.design); const st = S.settings; const open = roundOpen();
+  const v = S.sel.view;
+  const ordered = shirtsOrdered(); const max = Math.max(st.target, ordered);
+  const shots = !d.imgs ? [] : typeof d.imgs==='string'
+    ? [['front','ด้านหน้า',true],['back','ด้านหลัง',true],['collar','ปกเสื้อ'],['fabric','เนื้อผ้า'],['sleeve','ปลายแขน']]
+    : [['front','ด้านหน้า',true],['back','ด้านหลัง',true]];
+  const canCustom = d.imgs && typeof d.imgs==='string' && IMG[d.imgs+'-blank'];
+  const cn=(S.sel.cname||'').toUpperCase(), cnum=S.sel.cnum||'';
+  const nameFs = Math.min(7.6, 30/(0.66*Math.max(5,(cn||'MUDST').length)));
+  const backHTML = (cls='') => `<div class="backwrap ${d.imgs} ${cls}" style="aspect-ratio:${IMGDIM[d.imgs+'-blank']}" role="img" aria-label="ตัวอย่างด้านหลัง ชื่อ ${esc(cn||'MUDST')} เบอร์ ${esc(cnum||'07')}">
+      <img src="${IMG[d.imgs+'-blank']}" alt=""><span class="bn" style="font-size:${(nameFs*1.511).toFixed(2)}cqw">${esc(cn||'MUDST')}</span><span class="bnum">${esc(cnum||'07')}</span></div>`;
+  const stageImg = (v==='back' && canCustom && (cn||cnum)) ? backHTML()
+    : (v==='front'||v==='back') ? picOf(d,v).replace('<img','<img class="shirt"').replace('<svg','<svg class="shirt" style="max-height:92%;width:80%"')
+                 : `<img class="shirt" style="border-radius:18px;max-height:80%" src="${IMG[d.imgs+'-'+v]}" alt="รายละเอียด${v}">`;
+  const others = S.designs.filter(x=>x.status==='open'&&x.imgs);
+  return `${header()}
+  <main>
+  <div class="wrap">
+    <nav class="crumbs" aria-label="ตำแหน่งหน้า"><button class="link" data-act="go" data-v="shop">สินค้าทั้งหมด</button><span>/</span><span>${esc(d.th)}</span></nav>
+    <div class="hero">
+      <div>
+        <div class="stage">
+          
+          ${stageImg}
+          ${shots.length?`<div class="flip" role="group" aria-label="มุมมองเสื้อ">
+            <button class="chip" data-act="side" data-v="front" aria-pressed="${v==='front'}">ด้านหน้า</button>
+            <button class="chip" data-act="side" data-v="back" aria-pressed="${v==='back'}">ด้านหลัง</button>
+          </div>`:''}
+        </div>
+        <div class="thumbs" role="group" aria-label="ภาพสินค้า">
+          ${shots.map(([k,label,cut])=>`<button class="${cut?'cut':''}" data-act="side" data-v="${k}" aria-pressed="${v===k}" aria-label="${label}">
+            ${cut? picOf(d,k) : `<img src="${IMG[d.imgs+'-'+k]}" alt="">`}</button>`).join('')}
+        </div>
+      </div>
+      <div class="buy">
+        <span class="round ${open?'':'closed'}"><i></i>${open?`เปิดรับสั่งจอง${st.round} เหลืออีก ${daysLeft()} วัน`:`ปิดรับสั่งจอง${st.round}แล้ว`}</span>
+        <h1>${d.ph?esc(d.th):`MUDST Jersey<br>${esc(d.en||d.th)}`}</h1>
+        <p class="sub">${d.ph?'สินค้าตัวอย่างสำหรับรอบถัดไป รูปและรายละเอียดจะเพิ่มเมื่อออกแบบเสร็จ':`เสื้อโปโลเจอร์ซี่ประจำกลุ่ม Digital Science &amp; Technology ใส่ได้ทั้งวันเรียนและวันกิจกรรม ผลิตตามจำนวนที่สั่งจองเท่านั้น`}</p>
+        <div class="price"><b>${d.ph?'—':priceOf(d.id).toLocaleString('th-TH')}</b><span>${d.ph?'ยังไม่กำหนดราคา':'บาทต่อตัว รวมค่าจัดส่งแล้ว'}</span></div>
+
+        ${!d.ph&&others.length>1?`<p class="field-label">สีอื่นของรุ่นนี้</p>
+        <div class="designs" role="group" aria-label="เลือกแบบเสื้อ">
+          ${others.map(x=>`<button class="dcard" data-act="design" data-v="${x.id}" aria-pressed="${x.id===d.id}">
+              <div class="pic">${picOf(x,'front')}</div>
+              <span class="nm">${esc(x.th)}</span>
+              <span class="sw">${x.colors.map(c=>`<i style="background:${c}"></i>`).join('')}</span>
+            </button>`).join('')}
+        </div>`:''}
+
+        ${d.ph?`<div class="note" style="margin:0 0 20px">ช่องนี้เว้นไว้สำหรับแบบเสื้อในรอบถัดไป ผู้ดูแลเพิ่มรูป ราคา และเปิดจองได้จากหลังบ้าน</div>`:`<p class="field-label">ไซซ์ <button class="link" data-act="jump" data-v="size">ไม่แน่ใจไซซ์? ดูตาราง</button></p>
+        <div class="sizes" role="group" aria-label="เลือกไซซ์">
+          ${SIZES.map(z=>`<button data-act="size" data-v="${z.s}" aria-pressed="${S.sel.size===z.s}">${z.s}</button>`).join('')}
+        </div>
+        ${canCustom?`<div class="custom">
+          <p class="field-label">ชื่อและเบอร์ด้านหลัง <small>${S.settings.customFee?'+'+S.settings.customFee+' บาท ต่อตัว':'ไม่มีค่าใช้จ่ายเพิ่ม'}</small></p>
+          <div class="cgrid">
+            <div class="f" style="margin:0"><label for="cName">ชื่อ <small>(ไม่เกิน 12 ตัว)</small></label><input class="input" id="cName" maxlength="12" placeholder="MUDST" value="${esc(S.sel.cname||'')}" autocomplete="off"></div>
+            <div class="f" style="margin:0"><label for="cNum">เบอร์ <small>(0–99)</small></label><input class="input" id="cNum" inputmode="numeric" maxlength="2" placeholder="07" value="${esc(S.sel.cnum||'')}" autocomplete="off"></div>
+          </div>
+          ${cn||cnum?`<div class="cprev">${backHTML('mini')}</div>`:''}
+          <p class="hint" style="margin:8px 0 0">${cn||cnum?'ดูตัวอย่างบนรูปด้านหลังได้เลย':'เว้นว่างไว้ จะได้ "MUDST 07" ตามแบบ'}${cn||cnum?` หรือ <button class="link" data-act="clearCustom">ใช้ลายมาตรฐาน</button>`:''}</p>
+        </div>`:''}
+        <p class="err" id="buyErr"></p>`}
+        <div class="qtyrow">
+          <div class="qty" aria-label="จำนวน"><button data-act="qty" data-v="-1" aria-label="ลดจำนวน">${ic('minus')}</button><output>${S.sel.qty}</output><button data-act="qty" data-v="1" aria-label="เพิ่มจำนวน">${ic('plus')}</button></div>
+          <button class="btn" data-act="add" ${open&&d.status==='open'?'':'disabled'}>${d.status==='soon'?'แบบนี้ยังไม่เปิดจอง':open?'ใส่ตะกร้า':'ปิดรับสั่งจองแล้ว'}</button>
+        </div>
+
+        <div class="meter">
+          <div class="top"><span>สั่งจองแล้วทั้งหมด<br><b>${ordered}</b> ตัว</span><span style="text-align:right">${ordered>=st.minQty?'ถึงยอดขั้นต่ำแล้ว<br><strong>ผลิตแน่นอน</strong>':`อีก <strong>${st.minQty-ordered}</strong> ตัว<br>ถึงยอดขั้นต่ำ`}</span></div>
+          <div class="bar" aria-hidden="true"><i style="width:${Math.min(100,ordered/max*100)}%"></i>
+            <span class="mk" style="left:${st.minQty/max*100}%"><span>ขั้นต่ำ ${st.minQty}</span></span>
+            <span class="mk ${st.target/max>.85?'end':''}" style="left:${Math.min(99.5,st.target/max*100)}%"><span>เป้า ${st.target}</span></span></div>
+          <p class="foot" style="margin-bottom:0">ปิดรับ ${tdate(st.close,{day:'numeric',month:'long'})} คาดว่าจัดส่งภายใน ${tdate(st.ship,{day:'numeric',month:'long',year:'numeric'})}<br>ถ้าไม่ถึงยอดขั้นต่ำ คืนเงินเต็มจำนวน</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <section class="blk" id="size"><div class="wrap">
+    <h2>ตารางไซซ์</h2>
+    <p class="lead">วัดจากตัวเสื้อจริงแบบวางราบ หน่วยเป็นนิ้ว (ในวงเล็บเป็นเซนติเมตร) ทรงเสื้อเป็นทรงตรง ไม่เข้ารูป</p>
+    <div class="two">
+      <table class="t"><thead><tr><th>ไซซ์</th><th class="num">รอบอก</th><th class="num">ความยาว</th></tr></thead><tbody>
+        ${SIZES.map(z=>`<tr class="${S.sel.size===z.s?'hl':''}"><td><strong>${z.s}</strong></td><td class="num">${z.chest}" (${Math.round(z.chest*2.54)})</td><td class="num">${z.len}" (${Math.round(z.len*2.54)})</td></tr>`).join('')}
+      </tbody></table>
+      <div class="panel">
+        <h3>ช่วยเลือกไซซ์</h3>
+        <p>วัดรอบอกตัวเองตรงส่วนที่กว้างที่สุด แล้วกรอกด้านล่าง ระบบจะเผื่อให้หลวมขึ้น 2 นิ้ว</p>
+        <div class="helper"><label class="sr" for="chest">รอบอก (นิ้ว)</label>
+          <input class="input" id="chest" inputmode="decimal" placeholder="เช่น 36"><span>นิ้ว</span>
+          <button class="btn small" data-act="suggest">แนะนำไซซ์</button></div>
+        <div class="result" id="sugg" aria-live="polite"></div>
+        <div class="measure">
+          <svg viewBox="0 0 96 96" aria-hidden="true"><path d="M30 14 L18 20 L6 42 L18 50 L24 44 L24 88 L72 88 L72 44 L78 50 L90 42 L78 20 L66 14 Q48 24 30 14Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 46 H72" stroke="var(--a)" stroke-width="3" stroke-dasharray="4 3"/><path d="M84 18 V88" stroke="var(--a)" stroke-width="3" stroke-dasharray="4 3"/></svg>
+          <span><strong style="color:var(--ink)">รอบอก</strong> วัดจากใต้วงแขนข้างหนึ่งถึงอีกข้าง แล้วคูณ 2<br><strong style="color:var(--ink)">ความยาว</strong> วัดจากจุดสูงสุดของบ่าถึงชายเสื้อ</span>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="blk"><div class="wrap">
+    <h2>รายละเอียดสินค้า</h2>
+    <p class="lead">ข้อมูลเนื้อผ้าและการผลิตจะยืนยันอีกครั้งจากตัวอย่างเสื้อจริงก่อนเปิดขาย</p>
+    <div class="specs">
+      <div><b>เนื้อผ้า</b><span>ผ้ากีฬาไมโครโพลีเอสเตอร์ ระบายอากาศ</span></div>
+      <div><b>การพิมพ์</b><span>ซับลิเมชันทั้งตัว สีไม่ลอก ไม่แตก</span></div>
+      <div><b>ทรง</b><span>โปโลคอปก กระดุม 3 เม็ด</span></div>
+      <div><b>การดูแล</b><span>ซักน้ำเย็น กลับด้านก่อนซัก ห้ามรีดทับลาย</span></div>
+    </div>
+  </div></section>
+
+  </main>
+  <footer><div class="wrap">MUDST Jersey ต้นแบบเว็บแอปพลิเคชันสำหรับรายวิชา ITDS294 คณะ ICT มหาวิทยาลัยมหิดล</div></footer>`;
+}
+
+function pcard(d){
+  const img = d.imgs ? (typeof d.imgs==='string'
+      ? `<img class="f" src="${IMG[d.imgs+'-front']}" alt="${esc(d.th)} ด้านหน้า"><img class="b" src="${IMG[d.imgs+'-back']}" alt="" aria-hidden="true">`
+      : `<img class="f" src="${d.imgs.front}" alt="${esc(d.th)}"><img class="b" src="${d.imgs.back||d.imgs.front}" alt="" aria-hidden="true">`)
+    : `<span class="noimg-t">รูปสินค้า</span>`;
+  const open = d.status==='open';
+  return `<button class="pcard ${d.imgs?'':'empty'}" data-act="design" data-v="${d.id}">
+    <div class="pimg">${img}<span class="ptag ${open?'open':''}">${open?'เปิดจอง':'เร็ว ๆ นี้'}</span></div>
+    <div class="pinfo"><b>${esc(d.ph?d.th:'MUDST Jersey '+(d.en||d.th))}</b>
+      <span>${d.ph?'ยังไม่กำหนดราคา':priceOf(d.id)+' บาท รวมส่ง'}</span>
+      ${d.colors.length?`<span class="sw">${d.colors.map(c=>`<i style="background:${c}"></i>`).join('')}</span>`:'<span class="sw"><i></i><i></i><i></i></span>'}</div>
+  </button>`;
+}
+function viewHome(){
+  const st=S.settings, open=roundOpen(), ordered=shirtsOrdered(), max=Math.max(st.target,ordered);
+  const all=S.designs.filter(d=>d.status!=='hidden');
+  const f=S.homeFilter||'all';
+  const list=all.filter(d=>f==='all'||d.status===f);
+  const nOpen=all.filter(d=>d.status==='open').length, nSoon=all.length-nOpen;
+  const real=all.filter(d=>d.imgs&&typeof d.imgs==='string');
+  const stepState = i => { const cur = open?2:3; return i<cur?'done':i===cur?'now':''; };
+  return `${header()}<main>
+  <div class="wrap"><div class="hhero">
+    <div class="hh-text">
+      <span class="round ${open?'':'closed'}"><i></i>${open?`เปิดรับสั่งจอง${esc(st.round)} เหลืออีก ${daysLeft()} วัน`:`ปิดรับสั่งจอง${esc(st.round)}แล้ว`}</span>
+      <h1 class="wordmark">MUDST<br>Jersey</h1>
+      <p class="sub">เสื้อประจำกลุ่ม Digital Science &amp; Technology คณะ ICT สั่งจองล่วงหน้า แล้วผลิตตามยอดจริงหลังปิดรอบ</p>
+      <div class="meter">
+        <div class="top"><span>สั่งจองแล้วทั้งหมด<br><b>${ordered}</b> ตัว</span><span style="text-align:right">${ordered>=st.minQty?'ถึงยอดขั้นต่ำแล้ว<br><strong>ผลิตแน่นอน</strong>':`อีก <strong>${st.minQty-ordered}</strong> ตัว<br>ถึงยอดขั้นต่ำ`}</span></div>
+        <div class="bar" aria-hidden="true"><i style="width:${Math.min(100,ordered/max*100)}%"></i>
+          <span class="mk" style="left:${st.minQty/max*100}%"><span>ขั้นต่ำ ${st.minQty}</span></span>
+          <span class="mk ${st.target/max>.85?'end':''}" style="left:${Math.min(99.5,st.target/max*100)}%"><span>เป้า ${st.target}</span></span></div>
+        <p class="foot" style="margin-bottom:0">ปิดรับ ${tdate(st.close,{day:'numeric',month:'long'})} ถ้าไม่ถึงยอดขั้นต่ำ คืนเงินเต็มจำนวน</p>
+      </div>
+      <div class="hh-actions"><button class="btn" data-act="jump" data-v="catalog">ดูสินค้าทั้งหมด</button><button class="btn ghost" data-act="go" data-v="track">ติดตามคำสั่งซื้อ</button></div>
+    </div>
+    <div class="hh-art" aria-hidden="true">
+      ${real[1]?`<img class="back" src="${IMG[real[1].imgs+'-front']}" alt="">`:''}
+      ${real[0]?`<img class="front" src="${IMG[real[0].imgs+'-front']}" alt="">`:''}
+    </div>
+  </div></div>
+
+  <section class="blk" id="catalog"><div class="wrap">
+    <div class="cat-head"><div><h2>สินค้าทั้งหมด</h2><p class="lead" style="margin:0">เปิดให้สั่งจอง ${nOpen} แบบ และจะเพิ่มอีก ${nSoon} แบบ</p></div>
+      <div class="toolbar" style="margin:0" role="group" aria-label="กรองสินค้า">
+        ${[['all','ทั้งหมด',all.length],['open','เปิดจอง',nOpen],['soon','เร็ว ๆ นี้',nSoon]].map(([k,t,n])=>`<button class="fchip" data-act="hfilter" data-v="${k}" aria-pressed="${f===k}">${t}<em>${n}</em></button>`).join('')}
+      </div></div>
+    <div class="pgrid">${list.map(pcard).join('')}</div>
+  </div></section>
+  <section class="blk"><div class="wrap">
+    <h2>ตั้งแต่สั่งจองจนได้เสื้อ</h2>
+    <p class="lead">ระบบ Pre-order ผลิตตามยอดจริงหลังปิดรอบ ทุกวันที่ด้านล่างแสดงก่อนชำระเงิน เพื่อให้รู้ว่าต้องรอนานเท่าไร</p>
+    <ol class="steps">
+      <li class="${stepState(0)}"><b>เปิดรับสั่งจอง</b><span>${tdate(st.open,{day:'numeric',month:'short'})}</span></li>
+      <li class="${stepState(1)}"><b>ชำระเงิน + แนบสลิป</b><span>ทีมงานตรวจภายใน 1 วัน</span></li>
+      <li class="${stepState(2)}"><b>ปิดรอบ สรุปยอด</b><span>${tdate(st.close,{day:'numeric',month:'short'})}</span></li>
+      <li class="${stepState(3)}"><b>ส่งผลิต</b><span>ประมาณ 3 สัปดาห์</span></li>
+      <li class="${stepState(4)}"><b>จัดส่งถึงบ้าน</b><span>ภายใน ${tdate(st.ship,{day:'numeric',month:'short'})}</span></li>
+    </ol>
+  </div></section>
+  <section class="blk"><div class="wrap" style="max-width:860px;margin-left:max(20px,calc((100% - 1180px)/2 + 0px))">
+    <h2>เงื่อนไขการสั่งซื้อ</h2>
+    <p class="lead">อ่านก่อนสั่งจอง ข้อมูลชุดเดียวกันนี้แสดงในหน้าชำระเงินด้วย</p>
+    <details class="qa"><summary>ยกเลิกคำสั่งซื้อได้ไหม</summary><p>ยกเลิกได้จนถึงวันปิดรับสั่งจอง (${tdate(st.close)}) โดยติดต่อทีมงานพร้อมเลขคำสั่งซื้อ คืนเงินเต็มจำนวนภายใน 7 วัน หลังส่งผลิตแล้วไม่สามารถยกเลิกได้</p></details>
+    <details class="qa"><summary>ถ้ายอดสั่งจองไม่ถึงขั้นต่ำจะเป็นอย่างไร</summary><p>โรงงานผลิตขั้นต่ำ ${st.minQty} ตัวต่อรอบ หากปิดรอบแล้วยอดไม่ถึง ทีมงานจะแจ้งทุกคนภายใน 3 วันและคืนเงินเต็มจำนวน</p></details>
+    <details class="qa"><summary>ได้เสื้อผิดไซซ์หรือมีตำหนิ</summary><p>แจ้งภายใน 7 วันหลังได้รับสินค้า พร้อมรูปถ่าย หากเป็นตำหนิจากการผลิตเปลี่ยนให้ฟรี การเปลี่ยนไซซ์เพราะเลือกผิดทำได้ตามจำนวนเสื้อสำรองที่เหลือ</p></details>
+    <details class="qa"><summary>ข้อมูลส่วนตัวของฉันใช้ทำอะไร</summary><p>เราเก็บเฉพาะชื่อ เบอร์โทร และที่อยู่ เพื่อจัดส่งและติดต่อเรื่องคำสั่งซื้อเท่านั้น เฉพาะผู้ดูแลที่ได้รับสิทธิ์เข้าถึงได้ และจะลบเมื่อจบรอบการขาย</p></details>
+    <details class="qa"><summary>ติดต่อทีมงาน</summary><p>LINE Official @mudstjersey หรือ Instagram mudst.jersey (ช่องทางตัวอย่างในต้นแบบ)</p></details>
+  </div></section>
+  </main>
+  <footer><div class="wrap">MUDST Jersey ต้นแบบเว็บแอปพลิเคชันสำหรับรายวิชา ITDS294 คณะ ICT มหาวิทยาลัยมหิดล</div></footer>`;
+}
+
+function drawer(){
+  const el = $('#drawer'); const items = S.cart;
+  const sub = items.reduce((a,b)=>a+b.qty*unitOf(b),0);
+  el.innerHTML = `<div class="hd"><h2>ตะกร้า</h2><button class="x" data-act="closeDrawer" aria-label="ปิด">${ic('x',20)}</button></div>
+  <div class="bd">${items.length? items.map((it,i)=>{const d=D(it.design); return `<div class="line-item">
+      <div class="pic">${picOf(d,'front')}</div>
+      <div><b>MUDST Jersey ${esc(d.th)}</b><small>ไซซ์ ${it.size} ${custLabel(it)}<br>${unitOf(it)} บาท</small><br>
+        <span class="mini-qty"><button data-act="cq" data-i="${i}" data-v="-1" aria-label="ลด">${ic('minus',14)}</button><span>${it.qty}</span><button data-act="cq" data-i="${i}" data-v="1" aria-label="เพิ่ม">${ic('plus',14)}</button></span></div>
+      <div style="text-align:right"><strong>${(it.qty*unitOf(it)).toLocaleString()}</strong><br><button class="link" style="font-size:13px;color:var(--steel)" data-act="cdel" data-i="${i}">ลบ</button></div>
+    </div>`}).join('')
+    : `<div class="empty"><b>ยังไม่มีเสื้อในตะกร้า</b>เลือกแบบและไซซ์ แล้วกด "ใส่ตะกร้า"<br><br><button class="btn ghost" data-act="closeDrawer">เลือกเสื้อ</button></div>`}</div>
+  ${items.length?`<div class="ft">
+    <div class="sumrow"><span>ค่าเสื้อ</span><span>${baht(sub)}</span></div>
+    <div class="sumrow"><span>ค่าจัดส่ง</span><span>รวมในราคาแล้ว</span></div>
+    <div class="sumrow total"><span>ยอดชำระ</span><span>${baht(sub)}</span></div>
+    <button class="btn block" style="margin-top:12px" data-act="checkout">ไปหน้าชำระเงิน</button></div>`:''}`;
+}
+function openDrawer(){ drawer(); $('#drawer').classList.add('on'); $('#drawer').setAttribute('aria-hidden','false'); $('#scrim').classList.add('on'); setTimeout(()=>$('#drawer .x').focus(),50); }
+function closeDrawer(){ $('#drawer').classList.remove('on'); $('#drawer').setAttribute('aria-hidden','true'); $('#scrim').classList.remove('on'); }
+
+function qrSVG(seed){
+  let x=seed; const r=()=> (x=(x*1103515245+12345)%2147483648)/2147483648; const n=25; let c='';
+  const finder=(ox,oy)=>`<rect x="${ox}" y="${oy}" width="7" height="7" fill="#111"/><rect x="${ox+1}" y="${oy+1}" width="5" height="5" fill="#fff"/><rect x="${ox+2}" y="${oy+2}" width="3" height="3" fill="#111"/>`;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){ if((i<8&&j<8)||(i<8&&j>16)||(i>16&&j<8)) continue; if(r()<.5) c+=`<rect x="${i}" y="${j}" width="1" height="1"/>`; }
+  return `<svg viewBox="-1 -1 27 27" role="img" aria-label="QR ตัวอย่าง"><g fill="#111">${c}</g>${finder(0,0)}${finder(18,0)}${finder(0,18)}</svg>`;
+}
+
+function viewCheckout(){
+  const items=S.cart; const sub=items.reduce((a,b)=>a+b.qty*unitOf(b),0); const co=S.co;
+  if(!items.length) return `${header()}<main class="page"><div class="wrap"><div class="empty"><b>ตะกร้าว่างอยู่</b>เพิ่มเสื้อก่อนแล้วค่อยมาชำระเงิน<br><br><button class="btn" data-act="go" data-v="shop">เลือกเสื้อ</button></div></div></main>`;
+  return `${header()}<main class="page"><div class="wrap">
+  <button class="link" data-act="go" data-v="shop" style="margin-bottom:12px">กลับไปเลือกเสื้อ</button>
+  <h1>ชำระเงิน</h1><p class="lead">กรอกข้อมูลครั้งเดียว ใช้ทั้งจัดส่งและติดตามคำสั่งซื้อ</p>
+  <form class="co" id="coForm" novalidate>
+   <div>
+    <div class="panel"><h2><i>1</i>ข้อมูลผู้สั่งซื้อ</h2>
+      <div class="f"><label for="fName">ชื่อ-นามสกุล</label><input class="input" id="fName" autocomplete="name"><span class="msg"></span></div>
+      <div class="grid2">
+        <div class="f"><label for="fPhone">เบอร์โทรศัพท์</label><input class="input" id="fPhone" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxx"><span class="msg"></span></div>
+        <div class="f"><label for="fEmail">อีเมล <small>(ไม่บังคับ)</small></label><input class="input" id="fEmail" type="email" autocomplete="email"><span class="msg"></span></div>
+      </div>
+      <div class="f"><label for="fCust">คุณเป็น</label><select class="input" id="fCust">${Object.entries(CUST).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+    </div>
+    <div class="panel"><h2><i>2</i>ที่อยู่จัดส่ง</h2>
+      <div class="f"><label for="fAddr">บ้านเลขที่ ถนน หอพัก</label><input class="input" id="fAddr" autocomplete="street-address"><span class="msg"></span></div>
+      <div class="grid3">
+        <div class="f"><label for="fDist">ตำบล/อำเภอ</label><input class="input" id="fDist"><span class="msg"></span></div>
+        <div class="f"><label for="fProv">จังหวัด</label><input class="input" id="fProv"><span class="msg"></span></div>
+        <div class="f"><label for="fZip">รหัสไปรษณีย์</label><input class="input" id="fZip" inputmode="numeric" maxlength="5" autocomplete="postal-code"><span class="msg"></span></div>
+      </div>
+    </div>
+    <div class="panel"><h2><i>3</i>ชำระเงิน</h2>
+      <div class="radios">
+        <label class="radio"><input type="radio" name="pay" value="promptpay" ${co.pay==='promptpay'?'checked':''}><div><b>พร้อมเพย์ (QR)</b><span>สแกนจ่ายผ่านแอปธนาคารใดก็ได้</span></div></label>
+        <label class="radio"><input type="radio" name="pay" value="bank" ${co.pay==='bank'?'checked':''}><div><b>โอนเข้าบัญชีโครงการ</b><span>โอนแล้วแนบสลิปด้านล่าง</span></div></label>
+      </div>
+      <div class="pay">${co.pay==='promptpay'
+        ? `<div class="qr">${qrSVG(sub)}</div><p>ยอดที่ต้องโอน<br><b>${baht(sub)}</b><br>ชื่อบัญชี: โครงการ MUDST Jersey<br><span style="color:var(--steel)">QR ตัวอย่างในต้นแบบ สแกนจ่ายจริงไม่ได้</span></p>`
+        : `<div style="font-family:var(--disp);font-size:20px;font-weight:600">xxx-x-xxxxx-x</div><p>ยอดที่ต้องโอน <b>${baht(sub)}</b><br>ธนาคารตัวอย่าง ชื่อบัญชี โครงการ MUDST Jersey<br><span style="color:var(--steel)">เลขบัญชีจริงจะใส่ตอนเปิดขาย</span></p>`}</div>
+      <div class="drop">
+        ${co.slip?`<img src="${co.slip}" alt="สลิปที่แนบ">`:co.slipDemo?`<div class="ph ok">${ic('check',24)}</div>`:`<div class="ph">${ic('upload',24)}</div>`}
+        <div style="flex:1"><strong>${co.slip||co.slipDemo?'แนบสลิปแล้ว':'แนบสลิปการโอน'}</strong><br>
+          <label class="link" style="cursor:pointer">เลือกไฟล์รูป<input type="file" accept="image/*" id="fSlip" class="sr"></label>
+          <span style="color:var(--steel)"> หรือ </span><button type="button" class="link" data-act="demoSlip">ใช้สลิปตัวอย่าง (สาธิต)</button>
+          <div class="err" id="slipErr" style="min-height:0"></div></div>
+      </div>
+    </div>
+   </div>
+   <div class="summary"><div class="panel">
+    <h2 style="margin-bottom:8px">สรุปคำสั่งซื้อ</h2>
+    ${items.map(it=>{const d=D(it.design);return `<div class="line-item"><div class="pic">${picOf(d,'front')}</div><div><b>${esc(d.th)}</b><small>ไซซ์ ${it.size} ${custLabel(it)} × ${it.qty}</small></div><strong>${(it.qty*unitOf(it)).toLocaleString()}</strong></div>`}).join('')}
+    <div class="sumrow" style="margin-top:12px"><span>ค่าจัดส่ง</span><span>รวมแล้ว</span></div>
+    <div class="sumrow total"><span>ยอดชำระ</span><span>${baht(sub)}</span></div>
+    <div class="note">สินค้าแบบสั่งจอง ปิดรับ ${tdate(S.settings.close)} คาดว่าจะได้รับภายใน <strong>${tdate(S.settings.ship)}</strong></div>
+    <label class="check"><input type="checkbox" id="fTerms"><span>ฉันเข้าใจว่าต้องรอผลิต และยอมรับ<button type="button" class="link" data-act="terms">เงื่อนไขการยกเลิกและคืนเงิน</button></span></label>
+    <label class="check"><input type="checkbox" id="fPdpa"><span>ยินยอมให้ใช้ชื่อ เบอร์โทร และที่อยู่ เพื่อจัดส่งและติดต่อเรื่องคำสั่งซื้อนี้เท่านั้น</span></label>
+    <p class="err" id="coErr"></p>
+    <button class="btn block" type="submit">ยืนยันคำสั่งซื้อ ${baht(sub)}</button>
+   </div></div>
+  </form></div></main>`;
+}
+
+function viewDone(){
+  const o = S.lastOrder;
+  return `${header()}<main class="page"><div class="wrap"><div class="donepage">
+    <h1>ได้รับคำสั่งซื้อแล้ว</h1>
+    <p class="lead">จดเลขคำสั่งซื้อไว้ ใช้คู่กับเบอร์โทรเพื่อติดตามสถานะได้ทุกเมื่อ</p>
+    <div class="ticket"><div class="tp"><small>เลขคำสั่งซื้อ</small><b>${o.id}</b><small>${esc(o.name)} สั่ง ${qtyOf(o)} ตัว รวม ${baht(totalOf(o))}</small></div>
+      <div class="bt">${timelineHTML(o)}</div></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn" data-act="trackThis">ติดตามคำสั่งซื้อนี้</button>
+      <button class="btn ghost" data-act="go" data-v="shop">กลับหน้าร้าน</button>
+      <button class="btn ghost" data-act="seeAdmin">ดูคำสั่งซื้อนี้ในหลังบ้าน</button>
+    </div></div></div></main>`;
+}
+
+function timelineHTML(o){
+  const bad = ['rejected','cancelled'].includes(o.status);
+  const idx = FLOW.indexOf(o.status);
+  const est = {review:'', confirmed:`ปิดรอบ ${tdate(S.settings.close,{day:'numeric',month:'short'})}`, production:'', shipped:`ภายใน ${tdate(S.settings.ship,{day:'numeric',month:'short'})}`};
+  let html = '<ol class="timeline">';
+  FLOW.forEach((k,i)=>{
+    const cls = bad ? (i===0?'done':'') : i<idx?'done': i===idx?'done now':'';
+    html += `<li class="${cls}"><span class="dot"></span><b>${STATUS[k].t}</b><span>${i===idx&&!bad?STATUS[k].d:(i>idx?est[k]:'')}${k==='shipped'&&o.track&&i<=idx?`<br>เลขพัสดุ: <strong>${esc(o.track)}</strong>`:''}</span></li>`;
+    if(bad && i===0) html += `<li class="bad now"><span class="dot"></span><b>${STATUS[o.status].t}</b><span>${STATUS[o.status].d}</span></li>`;
+  });
+  return html+'</ol>';
+}
+
+function viewTrack(){
+  const r = S.trackResult;
+  return `${header()}<main class="page"><div class="wrap">
+    <h1>ติดตามคำสั่งซื้อ</h1><p class="lead">กรอกเลขคำสั่งซื้อ และเบอร์โทร 4 ตัวท้ายที่ใช้ตอนสั่ง</p>
+    <form class="lookup" id="trackForm" novalidate>
+      <div class="f" style="margin:0"><label for="tId">เลขคำสั่งซื้อ</label><input class="input" id="tId" placeholder="MJ-1001" value="${esc(S._tid||'')}"></div>
+      <div class="f" style="margin:0"><label for="tPh">เบอร์โทร 4 ตัวท้าย</label><input class="input" id="tPh" inputmode="numeric" maxlength="4" value="${esc(S._tph||'')}"></div>
+      <button class="btn" type="submit">ตรวจสอบสถานะ</button>
+    </form>
+    <p class="hint">ลองใช้ข้อมูลตัวอย่าง: <button class="link" data-act="demoTrack">MJ-1001 / 5678</button></p>
+    ${r===false?`<div class="note" style="border-color:var(--bad);max-width:720px">ไม่พบคำสั่งซื้อที่ตรงกับข้อมูลนี้ ตรวจเลขคำสั่งซื้อ (ขึ้นต้นด้วย MJ-) และเบอร์ 4 ตัวท้ายอีกครั้ง</div>`:''}
+    ${r?`<div class="ticket" style="max-width:720px"><div class="tp"><small>คำสั่งซื้อ</small><b>${r.id}</b><small>สั่งเมื่อ ${ttime(r.created)} จำนวน ${qtyOf(r)} ตัว รวม ${baht(totalOf(r))}</small></div>
+      <div class="bt"><p style="margin:0 0 16px;color:var(--ink-2)">${r.items.map(itemText).join('<br>')}</p>${timelineHTML(r)}</div></div>`:''}
+  </div></main>`;
+}
+
+/* ---------- admin ---------- */
+function viewAdmin(){
+  if(!S.admin.logged) return `<main class="wrap"><div class="login panel">
+    <span class="brand"><b>MUDST</b><span>หลังบ้าน</span></span>
+    <h2 style="font-family:var(--disp);margin:20px 0 8px">เข้าสู่ระบบผู้ดูแล</h2>
+    <p>ระบบจริงจะใช้บัญชีผู้ดูแลที่กำหนดสิทธิ์ไว้เท่านั้น ในต้นแบบนี้กดปุ่มด้านล่างเพื่อเข้าดูได้เลย</p>
+    <button class="btn block" data-act="login">เข้าสู่ระบบ (โหมดสาธิต)</button></div></main>`;
+  const tab=S.admin.tab; const nReview=S.orders.filter(o=>o.status==='review').length;
+  const tabs=[['overview','ภาพรวม'],['orders','คำสั่งซื้อ'],['summary','สรุปยอดผลิต'],['designs','แบบเสื้อ'],['settings','ตั้งค่ารอบขาย']];
+  const body = {overview:aOverview, orders:aOrders, summary:aSummary, designs:aDesigns, settings:aSettings}[tab]();
+  return `<div class="adm"><aside class="side">
+    <span class="brand"><b>MUDST</b><span>หลังบ้าน</span></span>
+    <nav aria-label="เมนูผู้ดูแล">${tabs.map(([k,v])=>`<button data-act="atab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${v}${k==='orders'&&nReview?`<span class="cnt">${nReview}</span>`:''}</button>`).join('')}</nav>
+    <button class="themebtn" data-act="theme">${ic(S.dark?'sun':'moon',16)}<span>${S.dark?'โหมดกลางวัน':'โหมดกลางคืน'}</span></button>
+    <div class="who">เข้าสู่ระบบในชื่อ ผู้ดูแล (สาธิต)<br><button class="link" style="color:#C3C7CE" data-act="logout">ออกจากระบบ</button></div>
+  </aside><main class="amain">${body}</main></div>`;
+}
+
+function aOverview(){
+  const st=S.settings; const L=S.orders.filter(live); const shirts=shirtsOrdered();
+  const paidStatuses=['confirmed','production','shipped']; const paid=S.orders.filter(o=>paidStatuses.includes(o.status));
+  const rev=paid.reduce((a,o)=>a+totalOf(o),0); const nReview=S.orders.filter(o=>o.status==='review').length;
+  const max=Math.max(st.target,shirts);
+  const seg={}; L.forEach(o=>seg[o.cust]=(seg[o.cust]||0)+qtyOf(o)); const segMax=Math.max(...Object.values(seg),1);
+  const bySize={}; L.forEach(o=>o.items.forEach(it=>bySize[it.size]=(bySize[it.size]||0)+it.qty)); const szMax=Math.max(...Object.values(bySize),1);
+  return `<h1>ภาพรวม${esc(st.round)}</h1><p class="lead">${roundOpen()?`เปิดรับสั่งจองอยู่ เหลือ ${daysLeft()} วัน (ปิด ${tdate(st.close)})`:'ปิดรับสั่งจองแล้ว พร้อมสรุปยอดส่งผลิต'}</p>
+  <div class="kpis">
+    <div class="kpi"><small>เสื้อที่สั่งจอง (ไม่นับที่ยกเลิก)</small><b>${shirts} ตัว</b>
+      <div class="bar"><i style="width:${Math.min(100,shirts/max*100)}%"></i><span class="mk" style="left:${st.minQty/max*100}%"><span>จุดคุ้มทุน ${st.minQty}</span></span><span class="mk ${st.target/max>.85?'end':''}" style="left:${Math.min(99.5,st.target/max*100)}%"><span>เป้า ${st.target}</span></span></div></div>
+    <div class="kpi"><small>รายได้ที่ยืนยันแล้ว</small><b>${rev.toLocaleString()}</b><small>บาท จาก ${paid.length} คำสั่งซื้อ</small></div>
+    <div class="kpi ${nReview?'warn':''}"><small>รอตรวจสลิป</small><b>${nReview}</b><button class="link" data-act="gofilter" data-v="review">ไปตรวจ</button></div>
+    <div class="kpi"><small>คำสั่งซื้อทั้งหมด</small><b>${S.orders.length}</b><small>${S.orders.filter(o=>!live(o)).length} รายการยกเลิก/มีปัญหา</small></div>
+  </div>
+  <div class="agrid">
+    <div class="panel"><h3>ยอดตามไซซ์</h3><p>รวมทุกแบบ ใช้ดูว่าไซซ์ไหนต้องเตรียมเสื้อสำรอง</p>
+      <div class="bars-h">${SIZES.map(z=>`<div><span>${z.s}</span><i style="width:${(bySize[z.s]||0)/szMax*100}%"></i><span class="v">${bySize[z.s]||0}</span></div>`).join('')}</div></div>
+    <div class="panel"><h3>กลุ่มลูกค้า</h3><p>จำนวนเสื้อตามกลุ่มที่ลูกค้าเลือกตอนสั่งซื้อ</p>
+      <ul class="seglist">${Object.entries(CUST).sort((a,b)=>(seg[b[0]]||0)-(seg[a[0]]||0)).map(([k,v])=>`<li><span>${v}</span><span class="v">${seg[k]||0} ตัว</span><span class="p">${Math.round((seg[k]||0)/Math.max(1,shirts)*100)}%</span></li>`).join('')}</ul></div>
+  </div>
+  <div class="panel" style="margin-top:20px"><h3>คำสั่งซื้อล่าสุด</h3>${ordersTable(S.orders.slice(0,6))}</div>`;
+}
+
+function ordersTable(list){
+  if(!list.length) return `<div class="empty"><b>ไม่มีคำสั่งซื้อในสถานะนี้</b>ลองเลือกตัวกรองอื่น หรือล้างคำค้นหา</div>`;
+  return `<div class="tablewrap"><table class="t orders"><thead><tr><th>เลขที่</th><th>ลูกค้า</th><th>รายการ</th><th class="num">ยอด</th><th>สถานะ</th><th>สั่งเมื่อ</th></tr></thead><tbody>
+  ${list.map(o=>`<tr data-act="openOrder" data-v="${o.id}" tabindex="0"><td><strong>${o.id}</strong></td><td>${esc(o.name)}<br><small style="color:var(--steel)">${CUST[o.cust]}</small></td>
+    <td>${o.items.map(it=>`${esc(D(it.design)?.th||it.design)} ${it.size}×${it.qty}${isCustom(it)?` <small style="color:var(--steel)">${custLabel(it)}</small>`:''}`).join('<br>')}</td><td class="num">${totalOf(o).toLocaleString()}</td>
+    <td><span class="st ${o.status}">${STATUS[o.status].t}</span></td><td>${ttime(o.created)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+function aOrders(){
+  const f=S.admin.filter, q=S.admin.q.trim().toLowerCase();
+  const cnt=k=>k==='all'?S.orders.length:S.orders.filter(o=>o.status===k).length;
+  let list=S.orders.filter(o=>f==='all'||o.status===f);
+  if(q) list=list.filter(o=>(o.id+' '+o.name+' '+o.phone).toLowerCase().includes(q));
+  const nConf=S.orders.filter(o=>o.status==='confirmed').length;
+  return `<h1>คำสั่งซื้อ</h1><p class="lead">กดที่แถวเพื่อดูสลิปและเปลี่ยนสถานะ</p>
+  <div class="toolbar">
+    ${['all',...Object.keys(STATUS)].map(k=>`<button class="fchip" data-act="filter" data-v="${k}" aria-pressed="${f===k}">${k==='all'?'ทั้งหมด':STATUS[k].t}<em>${cnt(k)}</em></button>`).join('')}
+    <label class="sr" for="aq">ค้นหา</label><input class="input" id="aq" placeholder="ค้นหาเลขที่ ชื่อ หรือเบอร์" value="${esc(S.admin.q)}">
+  </div>
+  ${f==='confirmed'&&nConf?`<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">ส่งยอดให้โรงงานแล้ว? เปลี่ยนทั้ง ${nConf} รายการเป็น "กำลังผลิต" ได้ในครั้งเดียว<button class="btn small" data-act="bulkProd">เปลี่ยนเป็นกำลังผลิต</button></div>`:''}
+  ${ordersTable(list)}`;
+}
+
+function orderModal(id){
+  const o=S.orders.find(x=>x.id===id); if(!o) return;
+  const next = {review:'confirmed', confirmed:'production', production:'shipped'}[o.status];
+  $('#modalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start;gap:12px"><div><h2 style="margin:0">${o.id}</h2><span class="st ${o.status}">${STATUS[o.status].t}</span></div><button class="x" data-act="closeModal" aria-label="ปิด">${ic('x',20)}</button></div>
+  <div class="opanel" style="margin-top:16px">
+    <div class="row"><span>ลูกค้า</span><span>${esc(o.name)} (${CUST[o.cust]})</span></div>
+    <div class="row"><span>เบอร์โทร</span><span>${esc(o.phone)}</span></div>
+    <div class="row"><span>ที่อยู่</span><span style="text-align:right">${esc(o.addr)} ${esc(o.prov)} ${esc(o.zip)}</span></div>
+    <div class="row"><span>รายการ</span><span style="text-align:right">${o.items.map(itemText).join('<br>')}</span></div>
+    <div class="row"><span>ยอดที่ต้องได้รับ</span><strong>${baht(totalOf(o))}</strong></div>
+    <div class="row"><span>ช่องทาง</span><span>${o.pay==='promptpay'?'พร้อมเพย์':'โอนเข้าบัญชี'}</span></div>
+    <div class="row"><span>สั่งเมื่อ</span><span>${ttime(o.created)}</span></div>
+  </div>
+  <div class="slip">${o.slip?`<img src="${o.slip}" alt="สลิปของลูกค้า">`:`สลิปการโอน (ข้อมูลจำลอง)<br>ตรวจยอด ${baht(totalOf(o))} และวันเวลาให้ตรงกับคำสั่งซื้อ`}</div>
+  ${o.status==='review'?`<div class="actions"><button class="btn" data-act="setSt" data-id="${o.id}" data-v="confirmed">ยืนยันการชำระเงิน</button><button class="btn danger" data-act="setSt" data-id="${o.id}" data-v="rejected">แจ้งชำระไม่ถูกต้อง</button></div>`:''}
+  <div class="grid2" style="margin-top:16px;align-items:end">
+    <div class="f" style="margin:0"><label for="mSt">เปลี่ยนสถานะ</label><select class="input" id="mSt">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${k===o.status?'selected':''}>${v.t}</option>`).join('')}</select></div>
+    <div class="f" style="margin:0"><label for="mTrack">เลขพัสดุ <small>(เมื่อจัดส่ง)</small></label><input class="input" id="mTrack" value="${esc(o.track)}" placeholder="TH0123456789"></div>
+  </div>
+  <div class="actions" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" data-act="closeModal">ปิด</button><button class="btn" data-act="saveOrder" data-id="${o.id}">บันทึก</button></div>`;
+  $('#modal').classList.add('on'); setTimeout(()=>$('#modalBox .x').focus(),30);
+}
+
+function summaryData(){
+  const ok=['confirmed','production','shipped'].concat(S.admin.includeReview?['review']:[]);
+  const m={}; S.designs.forEach(d=>m[d.id]={});
+  S.orders.filter(o=>ok.includes(o.status)).forEach(o=>o.items.forEach(it=>{ m[it.design]=m[it.design]||{}; m[it.design][it.size]=(m[it.design][it.size]||0)+it.qty; }));
+  return m;
+}
+function customList(){
+  const ok=['confirmed','production','shipped'].concat(S.admin.includeReview?['review']:[]);
+  const out=[]; S.orders.filter(o=>ok.includes(o.status)).forEach(o=>o.items.forEach(it=>{ if(isCustom(it)) out.push({...it,id:o.id}); }));
+  const order=SIZES.map(z=>z.s); return out.sort((a,b)=>a.design.localeCompare(b.design)||order.indexOf(a.size)-order.indexOf(b.size));
+}
+function aSummary(){
+  const m=summaryData(); const ds=S.designs.filter(d=>Object.values(m[d.id]||{}).some(v=>v)||d.status==='open');
+  const colT=d=>SIZES.reduce((a,z)=>a+(m[d.id][z.s]||0),0); const rowT=z=>ds.reduce((a,d)=>a+(m[d.id][z.s]||0),0);
+  const all=ds.reduce((a,d)=>a+colT(d),0);
+  return `<h1>สรุปยอดผลิต</h1><p class="lead">ตารางนี้ส่งให้โรงงานได้เลย นับเฉพาะคำสั่งซื้อที่ชำระเงินแล้ว</p>
+  <label class="check" style="margin-bottom:16px"><input type="checkbox" data-act="incReview" ${S.admin.includeReview?'checked':''}><span>รวมคำสั่งซื้อที่ยังรอตรวจสลิปด้วย (${S.orders.filter(o=>o.status==='review').length} รายการ)</span></label>
+  <div class="tablewrap" style="max-width:760px"><table class="t"><thead><tr><th>ไซซ์</th>${ds.map(d=>`<th class="num">${esc(d.th)}</th>`).join('')}<th class="num">รวม</th></tr></thead><tbody>
+    ${SIZES.map(z=>`<tr><td><strong>${z.s}</strong></td>${ds.map(d=>`<td class="num">${m[d.id][z.s]||0}</td>`).join('')}<td class="num"><strong>${rowT(z)}</strong></td></tr>`).join('')}
+    <tr class="hl"><td>รวม</td>${ds.map(d=>`<td class="num">${colT(d)}</td>`).join('')}<td class="num">${all}</td></tr>
+  </tbody></table></div>
+  <div class="note" style="max-width:760px">${all>=S.settings.minQty?`ยอดรวม ${all} ตัว ผ่านขั้นต่ำของโรงงาน (${S.settings.minQty} ตัว) แล้ว`:`ยอดรวม ${all} ตัว ยังขาดอีก ${S.settings.minQty-all} ตัวถึงขั้นต่ำของโรงงาน`}</div>
+  <h2 style="font-family:var(--disp);font-size:22px;margin:32px 0 4px">รายการสกรีนชื่อและเบอร์</h2>
+  <p class="lead" style="margin-bottom:16px">${customList().length} ตัวที่สั่งชื่อ/เบอร์เอง ที่เหลือพิมพ์ลายมาตรฐาน "MUDST 07"</p>
+  <div class="tablewrap" style="max-width:760px;max-height:420px;overflow:auto"><table class="t"><thead><tr><th>แบบ</th><th>ไซซ์</th><th>ชื่อ</th><th class="num">เบอร์</th><th class="num">จำนวน</th><th>คำสั่งซื้อ</th></tr></thead><tbody>
+    ${customList().map(c=>`<tr><td>${esc(D(c.design)?.th)}</td><td>${c.size}</td><td><strong>${esc(c.cname||'MUDST')}</strong></td><td class="num">${esc(c.cnum||'07')}</td><td class="num">${c.qty}</td><td>${c.id}</td></tr>`).join('')||'<tr><td colspan="6">ยังไม่มีคำสั่งซื้อที่สกรีนชื่อ/เบอร์</td></tr>'}
+  </tbody></table></div>
+  <div class="actions"><button class="btn" data-act="copySum">คัดลอกเป็นข้อความส่งโรงงาน</button></div>`;
+}
+
+function aDesigns(){
+  return `<h1>แบบเสื้อ</h1><p class="lead">เพิ่มแบบใหม่สำหรับรอบถัดไป หรือเปลี่ยนสถานะแบบที่มีอยู่ หน้าร้านจะอัปเดตทันที</p>
+  <div class="dgrid">${S.designs.map(d=>`<div class="dadmin"><div class="pic">${picOf(d,'front')}</div><b>${esc(d.th)}</b><small style="color:var(--steel)">${d.en?esc(d.en)+'<br>':''}${d.ph?'ยังไม่กำหนดราคา':priceOf(d.id)+' บาท'}</small>
+    <label class="sr" for="ds-${d.id}">สถานะของ ${esc(d.th)}</label>
+    <select class="input" id="ds-${d.id}" data-act="dstatus" data-v="${d.id}"><option value="open" ${d.status==='open'?'selected':''}>เปิดให้สั่งจอง</option><option value="soon" ${d.status==='soon'?'selected':''}>แสดงเป็น "เร็ว ๆ นี้"</option><option value="hidden" ${d.status==='hidden'?'selected':''}>ซ่อนจากหน้าร้าน</option></select></div>`).join('')}
+    <button class="dadmin add" data-act="newDesign"><span><b>${ic('plus',32)}</b><br><strong>เพิ่มแบบเสื้อใหม่</strong><br><small>ตั้งชื่อ เลือกสี และอัปโหลดรูป</small></span></button>
+  </div>`;
+}
+
+function newDesignModal(){
+  S._nd = {front:null, back:null};
+  $('#modalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start"><h2>เพิ่มแบบเสื้อใหม่</h2><button class="x" data-act="closeModal" aria-label="ปิด">${ic('x',20)}</button></div>
+  <form id="ndForm" novalidate>
+   <div class="grid2"><div class="f"><label for="ndTh">ชื่อแบบ (ภาษาไทย)</label><input class="input" id="ndTh" placeholder="เช่น กรม-ทอง"><span class="msg"></span></div>
+   <div class="f"><label for="ndEn">ชื่อแบบ (อังกฤษ) <small>(ไม่บังคับ)</small></label><input class="input" id="ndEn" placeholder="Navy Gold"></div></div>
+   <div class="f"><label>สีเสื้อ</label><div class="colors">
+     <label>พื้น<input type="color" id="ndC1" value="#1B2A4A"></label><label>สีหลัก<input type="color" id="ndC2" value="#C9A227"></label><label>สีตัดขอบ<input type="color" id="ndC3" value="#FFFFFF"></label>
+     <div id="ndPrev" style="width:110px;margin-left:auto"></div></div></div>
+   <div class="grid2"><div class="f"><label for="ndF">รูปด้านหน้า <small>(ไม่บังคับ)</small></label><input type="file" accept="image/*" id="ndF" class="input"></div>
+   <div class="f"><label for="ndB">รูปด้านหลัง <small>(ไม่บังคับ)</small></label><input type="file" accept="image/*" id="ndB" class="input"></div></div>
+   <p class="hint" style="margin-top:0">ถ้ายังไม่มีรูป ระบบจะแสดงเสื้อจำลองจากสีที่เลือกไว้ก่อน</p>
+   <div class="grid2"><div class="f"><label for="ndP">ราคา (บาท)</label><input class="input" id="ndP" inputmode="numeric" value="${S.settings.price}"></div>
+   <div class="f"><label for="ndS">สถานะ</label><select class="input" id="ndS"><option value="soon">แสดงเป็น "เร็ว ๆ นี้"</option><option value="open">เปิดให้สั่งจองทันที</option></select></div></div>
+   <div class="actions" style="justify-content:flex-end"><button type="button" class="btn ghost" data-act="closeModal">ยกเลิก</button><button class="btn" type="submit">เพิ่มแบบเสื้อ</button></div>
+  </form>`;
+  $('#modal').classList.add('on'); ndPreview();
+}
+function ndPreview(){ const p=$('#ndPrev'); if(!p) return; p.innerHTML=jerseySVG({id:'prev',th:'ตัวอย่าง',colors:[$('#ndC1').value,$('#ndC2').value,$('#ndC3').value]},'front'); }
+
+function aSettings(){
+  const st=S.settings;
+  return `<h1>ตั้งค่ารอบขาย</h1><p class="lead">ราคา วันเปิด-ปิด และวันจัดส่ง จะแสดงบนหน้าร้านและหน้าชำระเงินทันทีที่บันทึก</p>
+  <form id="setForm" class="panel" style="max-width:720px" novalidate>
+    <div class="grid2"><div class="f"><label for="sRound">ชื่อรอบ</label><input class="input" id="sRound" value="${esc(st.round)}"></div>
+    <div class="f"><label for="sPrice">ราคามาตรฐานต่อตัว (บาท)</label><input class="input" id="sPrice" inputmode="numeric" value="${st.price}"></div></div>
+    <div class="grid3"><div class="f"><label for="sOpen">เปิดรับ</label><input class="input" type="date" id="sOpen" value="${st.open}"></div>
+    <div class="f"><label for="sClose">ปิดรับ</label><input class="input" type="date" id="sClose" value="${st.close}"></div>
+    <div class="f"><label for="sShip">คาดว่าจัดส่งภายใน</label><input class="input" type="date" id="sShip" value="${st.ship}"></div></div>
+    <div class="grid2"><div class="f"><label for="sMin">ยอดขั้นต่ำ / จุดคุ้มทุน (ตัว)</label><input class="input" id="sMin" inputmode="numeric" value="${st.minQty}"></div>
+    <div class="f"><label for="sTarget">เป้าหมายต่อรอบ (ตัว)</label><input class="input" id="sTarget" inputmode="numeric" value="${st.target}"></div></div>
+    <div class="grid2"><div class="f"><label for="sFee">ค่าสกรีนชื่อ/เบอร์ต่อตัว (บาท)</label><input class="input" id="sFee" inputmode="numeric" value="${st.customFee}"></div><div></div></div>
+    <label class="check"><input type="checkbox" id="sIsOpen" ${st.isOpen?'checked':''}><span><strong style="color:var(--ink)">เปิดรับสั่งจอง</strong> ปิดสวิตช์นี้เพื่อหยุดรับคำสั่งซื้อก่อนกำหนดได้</span></label>
+    <p class="err" id="setErr"></p>
+    <div class="actions"><button class="btn" type="submit">บันทึกการตั้งค่า</button><button type="button" class="btn ghost" data-act="previewShop">ดูหน้าร้าน</button></div>
+  </form>
+  <div class="panel" style="max-width:720px;margin-top:20px"><h3>จุดคุ้มทุนจากแผนธุรกิจ</h3>
+    <p style="margin:0">ราคาขาย ${st.price} บาท − ต้นทุนแปรผัน 385 บาท = กำไรต่อตัว ${st.price-385} บาท<br>ต้นทุนคงที่ 10,000 บาทต่อรอบ จึงต้องขายอย่างน้อย <strong style="color:var(--ink)">${st.price>385?Math.ceil(10000/(st.price-385)):'—'} ตัว</strong></p></div>`;
+}
+
+/* ---------- render + events ---------- */
+function render(){
+  theme();
+  document.querySelectorAll('.demobar .seg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===S.mode));
+  if(S.mode==='admin'){ $('#app').innerHTML=viewAdmin(); return; }
+  const v={shop:viewHome, product:viewProduct, checkout:viewCheckout, done:viewDone, track:viewTrack}[S.view]||viewShop;
+  $('#app').innerHTML=v();
+}
+
+document.addEventListener('click', e=>{
+  const t=e.target.closest('[data-act]'); if(!t) return;
+  const a=t.dataset.act, v=t.dataset.v;
+  if(t.tagName==='INPUT'||t.tagName==='SELECT') return;
+  switch(a){
+    case 'mode': S.mode=v; closeDrawer(); render(); window.scrollTo({top:0}); break;
+    case 'go': closeDrawer(); go(v); break;
+    case 'jump': { const need = v==='size'?'product':'shop'; if(S.view!==need) go(need); } setTimeout(()=>document.getElementById(v)?.scrollIntoView({behavior:'smooth'}),30); break;
+    case 'side': S.sel.view=v; render(); break;
+    case 'design': { S.sel.design=v; S.sel.view='front'; S.sel.size=null; S.sel.qty=1; go('product'); break; }
+    case 'theme': S.dark=!S.dark; try{localStorage.setItem('mudst-theme',S.dark?'dark':'light')}catch(_){} render(); break;
+    case 'clearCustom': S.sel.cname=''; S.sel.cnum=''; render(); break;
+    case 'hfilter': S.homeFilter=v; render(); break;
+    case 'size': S.sel.size=v; render(); break;
+    case 'qty': S.sel.qty=Math.min(10,Math.max(1,S.sel.qty+ +v)); $('.qty output').textContent=S.sel.qty; break;
+    case 'add': {
+      if(!S.sel.size){ $('#buyErr').textContent='เลือกไซซ์ก่อนใส่ตะกร้า'; document.querySelector('.sizes button').focus(); return; }
+      const cn=(S.sel.cname||'').trim().toUpperCase(), cnum=(S.sel.cnum||'').trim();
+      if(cn && !/^[A-Z0-9ก-๙ .\-]{1,12}$/.test(cn)){ $('#buyErr').textContent='ชื่อใช้ได้ไม่เกิน 12 ตัวอักษร (ไทย อังกฤษ ตัวเลข เว้นวรรค จุด ขีด)'; $('#cName').focus(); return; }
+      if(cnum && !/^\d{1,2}$/.test(cnum)){ $('#buyErr').textContent='เบอร์ใช้ได้ตั้งแต่ 0 ถึง 99'; $('#cNum').focus(); return; }
+      const cu = (cn||cnum)?{cname:cn,cnum}:{};
+      const ex=S.cart.find(c=>c.design===S.sel.design&&c.size===S.sel.size&&(c.cname||'')===(cu.cname||'')&&(c.cnum||'')===(cu.cnum||''));
+      if(ex) ex.qty+=S.sel.qty; else S.cart.push({design:S.sel.design,size:S.sel.size,qty:S.sel.qty,...cu});
+      S.sel.cname=''; S.sel.cnum='';
+      S.sel.qty=1; render(); openDrawer(); break; }
+    case 'openCart': openDrawer(); break;
+    case 'closeDrawer': closeDrawer(); break;
+    case 'cq': { const it=S.cart[+t.dataset.i]; it.qty=Math.max(1,Math.min(10,it.qty+ +v)); drawer(); render(); break; }
+    case 'cdel': S.cart.splice(+t.dataset.i,1); drawer(); render(); break;
+    case 'checkout': closeDrawer(); go('checkout'); break;
+    case 'suggest': {
+      const c=parseFloat(($('#chest').value||'').replace(',','.')); const out=$('#sugg');
+      if(!c||c<20||c>70){ out.innerHTML='<span style="color:var(--bad)">กรอกรอบอกเป็นนิ้ว ระหว่าง 20–70</span>'; break; }
+      const z=SIZES.find(z=>z.chest>=c+2);
+      out.innerHTML = z?`แนะนำไซซ์ <b>${z.s}</b> (รอบอกเสื้อ ${z.chest}") <button class="link" data-act="pickSug" data-v="${z.s}">เลือกไซซ์นี้</button>`:'รอบอกใหญ่กว่าไซซ์ที่มี ติดต่อทีมงานเพื่อสั่งไซซ์พิเศษ';
+      break; }
+    case 'pickSug': S.sel.size=v; render(); window.scrollTo({top:0,behavior:'smooth'}); toast('เลือกไซซ์ '+v+' แล้ว'); break;
+    case 'demoSlip': S.co.slipDemo=true; S.co.slip=null; keepForm(()=>render()); break;
+    case 'terms': S.mode='shop'; go('shop'); setTimeout(()=>{const q=document.querySelectorAll('details.qa')[0]; q.open=true; q.scrollIntoView({behavior:'smooth'});},40); break;
+    case 'trackThis': S._tid=S.lastOrder.id; S._tph=S.lastOrder.phone.slice(-4); S.trackResult=S.lastOrder; go('track'); break;
+    case 'seeAdmin': S.mode='admin'; S.admin.logged=true; S.admin.tab='orders'; S.admin.filter='review'; render(); orderModal(S.lastOrder.id); break;
+    case 'demoTrack': S._tid='MJ-1001'; S._tph='5678'; S.trackResult=S.orders.find(o=>o.id==='MJ-1001'); render(); break;
+    case 'login': S.admin.logged=true; render(); break;
+    case 'logout': S.admin.logged=false; render(); break;
+    case 'atab': S.admin.tab=v; render(); break;
+    case 'gofilter': S.admin.tab='orders'; S.admin.filter=v; render(); break;
+    case 'filter': S.admin.filter=v; render(); break;
+    case 'openOrder': orderModal(v); break;
+    case 'closeModal': $('#modal').classList.remove('on'); break;
+    case 'setSt': { const o=S.orders.find(x=>x.id===t.dataset.id); o.status=v; $('#modal').classList.remove('on'); render(); toast(`${o.id}: ${STATUS[v].t}`); break; }
+    case 'saveOrder': { const o=S.orders.find(x=>x.id===t.dataset.id); const ns=$('#mSt').value, tr=$('#mTrack').value.trim();
+      if(ns==='shipped'&&!tr){ $('#mTrack').classList.add('bad'); $('#mTrack').focus(); toast('ใส่เลขพัสดุก่อนเปลี่ยนเป็น "จัดส่งแล้ว"'); return; }
+      o.status=ns; o.track=tr; $('#modal').classList.remove('on'); render(); toast(`บันทึก ${o.id} แล้ว`); break; }
+    case 'bulkProd': { let n=0; S.orders.forEach(o=>{ if(o.status==='confirmed'){o.status='production';n++;} }); render(); toast(`เปลี่ยน ${n} รายการเป็น "กำลังผลิต" แล้ว`); break; }
+    case 'copySum': {
+      const m=summaryData(); let txt=`MUDST Jersey ${S.settings.round} — ยอดส่งผลิต\n`;
+      S.designs.forEach(d=>{ const row=SIZES.map(z=>m[d.id]?.[z.s]?`${z.s} ${m[d.id][z.s]}`:'').filter(Boolean); if(row.length) txt+=`\nแบบ${d.th}: ${row.join(', ')} (รวม ${SIZES.reduce((a,z)=>a+(m[d.id]?.[z.s]||0),0)} ตัว)`; });
+      const cl=customList(); if(cl.length){ txt+=`\n\nสกรีนชื่อ/เบอร์ (${cl.reduce((a,c)=>a+c.qty,0)} ตัว ที่เหลือพิมพ์ MUDST 07):`; cl.forEach(c=>txt+=`\n- ${D(c.design)?.th} ${c.size}: ${c.cname||'MUDST'} #${c.cnum||'07'}${c.qty>1?` ×${c.qty}`:''}`); }
+      $('#modalBox').innerHTML=`<h2>ข้อความส่งโรงงาน</h2><pre class="copy" id="cp">${esc(txt)}</pre><div class="actions" style="justify-content:flex-end"><button class="btn ghost" data-act="closeModal">ปิด</button><button class="btn" data-act="doCopy">คัดลอก</button></div>`;
+      $('#modal').classList.add('on'); break; }
+    case 'doCopy': navigator.clipboard?.writeText($('#cp').textContent).then(()=>toast('คัดลอกแล้ว'),()=>toast('คัดลอกไม่ได้ในหน้านี้ ให้เลือกข้อความแล้วคัดลอกเอง')); break;
+    case 'newDesign': newDesignModal(); break;
+    case 'previewShop': S.mode='shop'; go('shop'); break;
+  }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ $('#modal').classList.remove('on'); closeDrawer(); }
+  if(e.key==='Enter' && e.target.matches('tr[data-act=openOrder]')) orderModal(e.target.dataset.v);
+});
+document.addEventListener('input', e=>{
+  if(e.target.id==='cName'||e.target.id==='cNum'){
+    const el=e.target; if(el.id==='cNum') el.value=el.value.replace(/\D/g,''); 
+    S.sel[el.id==='cName'?'cname':'cnum']=el.value; S.sel.view='back';
+    const id=el.id, pos=el.selectionStart; render(); const n=$('#'+id); n.focus(); try{n.setSelectionRange(pos,pos)}catch(_){}
+  }
+  if(e.target.id==='aq'){ S.admin.q=e.target.value; const pos=e.target.selectionStart; render(); const n=$('#aq'); n.focus(); n.setSelectionRange(pos,pos); }
+  if(['ndC1','ndC2','ndC3'].includes(e.target.id)) ndPreview();
+  if(e.target.classList.contains('bad')) e.target.classList.remove('bad');
+});
+document.addEventListener('change', e=>{
+  const t=e.target;
+  if(t.name==='pay'){ S.co.pay=t.value; keepForm(()=>render()); }
+  if(t.id==='fSlip' && t.files[0]){ readImg(t.files[0], url=>{ S.co.slip=url; S.co.slipDemo=false; keepForm(()=>render()); }); }
+  if(t.dataset.act==='incReview'){ S.admin.includeReview=t.checked; render(); }
+  if(t.dataset.act==='dstatus'){ const d=D(t.dataset.v); d.status=t.value; if(S.sel.design===d.id&&d.status==='hidden'){ S.sel.design=S.designs.find(x=>x.status!=='hidden')?.id||S.designs[0].id; } toast(`${d.th}: อัปเดตสถานะแล้ว`); }
+  if(t.id==='ndF'||t.id==='ndB'){ const k=t.id==='ndF'?'front':'back'; if(t.files[0]) readImg(t.files[0], url=>S._nd[k]=url); }
+});
+function readImg(file, cb){ const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(file); }
+
+/* keep typed checkout values across re-render */
+const CO_FIELDS=['fName','fPhone','fEmail','fCust','fAddr','fDist','fProv','fZip','fTerms','fPdpa'];
+function keepForm(fn){ const vals={}; CO_FIELDS.forEach(id=>{const el=$('#'+id); if(el) vals[id]=el.type==='checkbox'?el.checked:el.value;}); fn(); CO_FIELDS.forEach(id=>{const el=$('#'+id); if(el&&id in vals){ if(el.type==='checkbox') el.checked=vals[id]; else el.value=vals[id]; }}); }
+
+document.addEventListener('submit', e=>{
+  e.preventDefault(); const f=e.target;
+  if(f.id==='coForm'){
+    const req={fName:'กรอกชื่อ-นามสกุล', fPhone:'กรอกเบอร์โทร 10 หลัก ขึ้นต้นด้วย 0', fAddr:'กรอกที่อยู่สำหรับจัดส่ง', fDist:'กรอกตำบล/อำเภอ', fProv:'กรอกจังหวัด', fZip:'รหัสไปรษณีย์ 5 หลัก'};
+    let first=null;
+    Object.entries(req).forEach(([id,msg])=>{ const el=$('#'+id); let v=el.value.trim(); let bad=!v;
+      if(id==='fPhone') bad=!/^0\d{9}$/.test(v.replace(/[\s-]/g,'')); if(id==='fZip') bad=!/^\d{5}$/.test(v);
+      el.classList.toggle('bad',bad); el.nextElementSibling.textContent=bad?msg:''; if(bad&&!first) first=el; });
+    const em=$('#fEmail'); const badE = em.value.trim() && !/^\S+@\S+\.\S+$/.test(em.value.trim()); em.classList.toggle('bad',!!badE); em.nextElementSibling.textContent=badE?'รูปแบบอีเมลไม่ถูกต้อง':''; if(badE&&!first) first=em;
+    $('#slipErr').textContent = (S.co.slip||S.co.slipDemo)?'':'แนบสลิปการโอน หรือใช้สลิปตัวอย่างสำหรับการสาธิต';
+    const terms=$('#fTerms').checked&&$('#fPdpa').checked;
+    $('#coErr').textContent = first?'ยังกรอกข้อมูลไม่ครบ ดูช่องที่ขึ้นสีแดง': !(S.co.slip||S.co.slipDemo)?'ยังไม่ได้แนบสลิปการโอน': !terms?'ติ๊กยอมรับเงื่อนไขทั้งสองข้อก่อนยืนยัน':'';
+    if(first){ first.focus(); return; } if(!(S.co.slip||S.co.slipDemo)||!terms) return;
+    const id='MJ-'+(1001+S.orders.length);
+    const o={id, name:$('#fName').value.trim(), phone:$('#fPhone').value.replace(/[\s-]/g,''), email:em.value.trim(), cust:$('#fCust').value,
+      addr:$('#fAddr').value.trim()+' '+$('#fDist').value.trim(), prov:$('#fProv').value.trim(), zip:$('#fZip').value.trim(),
+      items:S.cart.map(c=>({...c})), pay:S.co.pay, slip:S.co.slip, status:'review', track:'', created:new Date().toISOString()};
+    S.orders.unshift(o); S.lastOrder=o; S.cart=[]; S.co={slip:null,slipDemo:false,pay:'promptpay'}; go('done');
+  }
+  if(f.id==='trackForm'){
+    const id=$('#tId').value.trim().toUpperCase(), ph=$('#tPh').value.trim(); S._tid=id; S._tph=ph;
+    const o=S.orders.find(x=>x.id===id && x.phone.slice(-4)===ph); S.trackResult=o||false; render();
+  }
+  if(f.id==='setForm'){
+    const n=id=>parseInt($('#'+id).value,10);
+    const o=$('#sOpen').value, c=$('#sClose').value, s=$('#sShip').value;
+    let err=''; if(!(n('sPrice')>0)) err='ราคาต้องเป็นตัวเลขมากกว่า 0'; else if(!(o&&c&&s)) err='กรอกวันให้ครบทั้ง 3 ช่อง'; else if(c<o) err='วันปิดรับต้องอยู่หลังวันเปิดรับ'; else if(s<c) err='วันจัดส่งต้องอยู่หลังวันปิดรับ'; else if(!(n('sMin')>0&&n('sTarget')>0)) err='ยอดขั้นต่ำและเป้าหมายต้องเป็นตัวเลข';
+    $('#setErr').textContent=err; if(err) return;
+    Object.assign(S.settings,{round:$('#sRound').value.trim()||S.settings.round, price:n('sPrice'), customFee:Math.max(0,parseInt($('#sFee').value,10)||0), open:o, close:c, ship:s, minQty:n('sMin'), target:n('sTarget'), isOpen:$('#sIsOpen').checked});
+    render(); toast('บันทึกการตั้งค่าแล้ว หน้าร้านอัปเดตแล้ว');
+  }
+  if(f.id==='ndForm'){
+    const th=$('#ndTh').value.trim(); if(!th){ $('#ndTh').classList.add('bad'); $('#ndTh').nextElementSibling.textContent='ตั้งชื่อแบบเสื้อ'; $('#ndTh').focus(); return; }
+    const c=[$('#ndC1').value,$('#ndC2').value,$('#ndC3').value];
+    const lum=h=>{const n=parseInt(h.slice(1),16);return (0.299*(n>>16)+0.587*(n>>8&255)+0.114*(n&255))/255;};
+    const a = lum(c[1])>0.6 ? c[0] : c[1];
+    const d={id:'d'+Date.now(), th, en:$('#ndEn').value.trim(), colors:c, a, a2:c[2], on: lum(a)>0.6?'#1B1D21':'#FFFFFF',
+      imgs: S._nd.front?{front:S._nd.front, back:S._nd.back||S._nd.front}:null, status:$('#ndS').value, price:parseInt($('#ndP').value,10)||S.settings.price};
+    { const pi=S.designs.findIndex(x=>x.ph); if(pi>=0) S.designs.splice(pi,1,d); else S.designs.push(d); } $('#modal').classList.remove('on'); render(); toast(`เพิ่มแบบ "${th}" แล้ว`);
+  }
+});
+
+/* initial route */
+(function(){ const h=(location.hash||'').slice(1); if(h==='admin'){S.mode='admin';} else if(['track','product'].includes(h)) S.view=h; render(); })();
+</script>
+</body>
+</html>
